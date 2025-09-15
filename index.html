@@ -369,7 +369,7 @@
 
         // --- Funciones de Ayuda y Dibujo ---
         function initAudio() { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { console.error("Web Audio API is not supported in this browser"); } } }
-        function playJumpSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'square'; o.frequency.setValueAtTime(440, audioCtx.currentTime); g.gain.setValueAtTime(0.1, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.1); }
+        function playJumpSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'square'; o.frequency.setValueAtTime(880, audioCtx.currentTime); g.gain.setValueAtTime(0.05, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.1); }
         function playPointSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'triangle'; o.frequency.setValueAtTime(1200, audioCtx.currentTime); g.gain.setValueAtTime(0.1, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.1); }
         function playCoinSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'square'; o.frequency.setValueAtTime(1500, audioCtx.currentTime); g.gain.setValueAtTime(0.15, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.15); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.15); }
         function playGameOverSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'sawtooth'; o.frequency.setValueAtTime(440, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 0.5); g.gain.setValueAtTime(0.3, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.5); }
@@ -413,9 +413,13 @@
                 pausePlayBtn.textContent = 'Pausa'; mobilePausePlayBtn.textContent = 'Pausa';
                 updateSliderLabels();
             } else if (mode === 'game') {
-                bird.GRAVITY = (15 * PIXELS_PER_METER) / (FPS * FPS); // Increased gravity for game
-                bird.LIFT = (6.0 * PIXELS_PER_METER) / FPS; // Reduced LIFT for game mode
+                bird.GRAVITY = (18 * PIXELS_PER_METER) / (FPS * FPS); 
+                bird.LIFT = (7.5 * PIXELS_PER_METER) / FPS; 
                 canvas.style.background = GRAVITY_PRESETS['tierra'].bg;
+                if (canvas.width < 768) { // Zoom out on mobile
+                    bird.WIDTH = 40;
+                    bird.HEIGHT = 32;
+                }
             }
         }
 
@@ -724,6 +728,13 @@
             }
             ctx.restore();
         }
+        function drawRingPart(radiusX, radiusY, lineWidth, color, isBack) {
+             ctx.strokeStyle = color;
+             ctx.lineWidth = lineWidth;
+             ctx.beginPath();
+             ctx.ellipse(0, 0, radiusX, radiusY, 0, isBack ? Math.PI : 0, isBack ? 2 * Math.PI : Math.PI);
+             ctx.stroke();
+        }
         function drawTrajectory() { /* ... */ }
         function drawAllGraphs() {
             drawGraph(graphCtxY, history.y, 'Altura (y)'); drawGraph(graphCtxV, history.v, 'Velocidad (v)'); drawGraph(graphCtxA, history.a, 'Aceleración (a)');
@@ -847,13 +858,6 @@
         }
 
         function startScreenLoop(){if(gameState!=='start')return;ctx.clearRect(0,0,canvas.width,canvas.height);manageEnvironment();bird.VELOCITY+=bird.GRAVITY;bird.y+=bird.VELOCITY;if(bird.y + bird.HEIGHT/2 > canvas.height){bird.y = canvas.height - bird.HEIGHT/2; bird.VELOCITY = 0;}drawBird();frameCount++;requestAnimationFrame(startScreenLoop)}
-        function drawRingPart(radiusX, radiusY, lineWidth, color, isBack) {
-             ctx.strokeStyle = color;
-             ctx.lineWidth = lineWidth;
-             ctx.beginPath();
-             ctx.ellipse(0, 0, radiusX, radiusY, 0, isBack ? Math.PI : 0, isBack ? 2 * Math.PI : Math.PI);
-             ctx.stroke();
-        }
 
     </script>
 </body>
