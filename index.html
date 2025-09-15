@@ -84,6 +84,9 @@
         #closeGuideBtn:hover {
             background-color: rgba(255,0,0,0.5);
         }
+        #mobilePanel {
+             background-color: rgba(15, 23, 42, 0.85); /* More translucent */
+        }
     </style>
 </head>
 <body class="bg-gray-900 flex items-center justify-center h-screen m-0">
@@ -199,7 +202,7 @@
                 </div>
 
                 <!-- Sliding Panel (Mobile) -->
-                <div id="mobilePanel" class="fixed top-0 left-0 h-full w-4/5 max-w-[300px] bg-slate-900/90 backdrop-blur-sm z-40 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out pointer-events-auto overflow-y-auto">
+                <div id="mobilePanel" class="fixed top-0 left-0 h-full w-4/5 max-w-[300px] backdrop-blur-sm z-40 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out pointer-events-auto overflow-y-auto">
                     <button id="mobilePanelCloseBtn" class="absolute top-3 right-3 text-3xl font-bold text-white/70 hover:text-white">&times;</button>
                     
                     <div class="flex flex-col gap-6 text-white pt-8">
@@ -239,7 +242,6 @@
                             <div class="flex flex-col flex-grow min-h-0 gap-2">
                                  <div class="bg-black/20 rounded-md p-1 relative h-28"><canvas id="mobileGraphY"></canvas></div>
                                  <div class="bg-black/20 rounded-md p-1 relative h-28"><canvas id="mobileGraphV"></canvas></div>
-                                 <div class="bg-black/20 rounded-md p-1 relative h-28"><canvas id="mobileGraphA"></canvas></div>
                             </div>
                         </div>
                     </div>
@@ -338,10 +340,8 @@
         };
         const mobileGraphCanvasY = document.getElementById('mobileGraphY');
         const mobileGraphCanvasV = document.getElementById('mobileGraphV');
-        const mobileGraphCanvasA = document.getElementById('mobileGraphA');
         const mobileGraphCtxY = mobileGraphCanvasY.getContext('2d');
         const mobileGraphCtxV = mobileGraphCanvasV.getContext('2d');
-        const mobileGraphCtxA = mobileGraphCanvasA.getContext('2d');
 
         // --- DOM Popups ---
         const guidePopup = document.getElementById('guidePopup');
@@ -369,7 +369,7 @@
 
         // --- Funciones de Ayuda y Dibujo ---
         function initAudio() { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { console.error("Web Audio API is not supported in this browser"); } } }
-        function playJumpSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'sine'; o.frequency.setValueAtTime(880, audioCtx.currentTime); g.gain.setValueAtTime(0.2, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.1); }
+        function playJumpSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'square'; o.frequency.setValueAtTime(440, audioCtx.currentTime); g.gain.setValueAtTime(0.1, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.1); }
         function playPointSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'triangle'; o.frequency.setValueAtTime(1200, audioCtx.currentTime); g.gain.setValueAtTime(0.1, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.1); }
         function playCoinSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'square'; o.frequency.setValueAtTime(1500, audioCtx.currentTime); g.gain.setValueAtTime(0.15, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.15); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.15); }
         function playGameOverSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'sawtooth'; o.frequency.setValueAtTime(440, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 0.5); g.gain.setValueAtTime(0.3, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.5); }
@@ -387,7 +387,7 @@
             const container = document.getElementById('gameContainer');
             canvas.width = container.clientWidth;
             canvas.height = container.clientHeight;
-            [graphCanvasY, graphCanvasV, graphCanvasA, mobileGraphCanvasY, mobileGraphCanvasV, mobileGraphCanvasA].forEach(graphCanvas => {
+            [graphCanvasY, graphCanvasV, graphCanvasA, mobileGraphCanvasY, mobileGraphCanvasV].forEach(graphCanvas => {
                 if (graphCanvas && graphCanvas.parentElement) {
                     graphCanvas.width = graphCanvas.parentElement.clientWidth;
                     graphCanvas.height = graphCanvas.parentElement.clientHeight;
@@ -413,8 +413,8 @@
                 pausePlayBtn.textContent = 'Pausa'; mobilePausePlayBtn.textContent = 'Pausa';
                 updateSliderLabels();
             } else if (mode === 'game') {
-                bird.GRAVITY = (9.81 * PIXELS_PER_METER) / (FPS * FPS);
-                bird.LIFT = (6.5 * PIXELS_PER_METER) / FPS; // Reduced LIFT for game mode
+                bird.GRAVITY = (15 * PIXELS_PER_METER) / (FPS * FPS); // Increased gravity for game
+                bird.LIFT = (6.0 * PIXELS_PER_METER) / FPS; // Reduced LIFT for game mode
                 canvas.style.background = GRAVITY_PRESETS['tierra'].bg;
             }
         }
@@ -509,16 +509,26 @@
             drawBird();
         }
         function drawPipes() {
-            ctx.fillStyle = '#73BF29';
-            ctx.strokeStyle = '#548821';
-            ctx.lineWidth = 4;
             pipes.forEach(pipe => {
-                // Top pipe
+                const pipeGrad = ctx.createLinearGradient(pipe.x, 0, pipe.x + pipe.width, 0);
+                pipeGrad.addColorStop(0, '#558022');
+                pipeGrad.addColorStop(0.3, '#73BF29');
+                pipeGrad.addColorStop(1, '#558022');
+                ctx.fillStyle = pipeGrad;
+
+                const pipeBorder = '#3c5d18';
+                const capHeight = 30;
+
+                // Top Pipe
                 ctx.fillRect(pipe.x, 0, pipe.width, pipe.y - pipe.gap / 2);
-                ctx.strokeRect(pipe.x, 0, pipe.width, pipe.y - pipe.gap / 2);
-                // Bottom pipe
+                ctx.fillStyle = pipeBorder;
+                ctx.fillRect(pipe.x - 5, pipe.y - pipe.gap / 2 - capHeight, pipe.width + 10, capHeight);
+                
+                // Bottom Pipe
+                ctx.fillStyle = pipeGrad;
                 ctx.fillRect(pipe.x, pipe.y + pipe.gap / 2, pipe.width, canvas.height);
-                ctx.strokeRect(pipe.x, pipe.y + pipe.gap / 2, pipe.width, canvas.height);
+                ctx.fillStyle = pipeBorder;
+                ctx.fillRect(pipe.x - 5, pipe.y + pipe.gap / 2, pipe.width + 10, capHeight);
             });
         }
         function drawCoins() {
@@ -717,7 +727,7 @@
         function drawTrajectory() { /* ... */ }
         function drawAllGraphs() {
             drawGraph(graphCtxY, history.y, 'Altura (y)'); drawGraph(graphCtxV, history.v, 'Velocidad (v)'); drawGraph(graphCtxA, history.a, 'Aceleración (a)');
-            drawGraph(mobileGraphCtxY, history.y, 'Altura (y)'); drawGraph(mobileGraphCtxV, history.v, 'Velocidad (v)'); drawGraph(mobileGraphCtxA, history.a, 'Aceleración (a)');
+            drawGraph(mobileGraphCtxY, history.y, 'Altura (y)'); drawGraph(mobileGraphCtxV, history.v, 'Velocidad (v)');
         }
         function drawGraph(graphCtx, data, label) {
             if (!graphCtx || !graphCtx.canvas.clientWidth) return;
@@ -772,7 +782,7 @@
             gameOverScreen.classList.add('hidden');
             gameOverScreen.classList.remove('flex');
             startScreen.classList.remove('hidden');
-            setup('game');
+            setup('simulation'); // Setup for start screen animation
         }
         function togglePause() { isPaused = !isPaused; pausePlayBtn.textContent = isPaused ? 'Play' : 'Pausa'; mobilePausePlayBtn.textContent = isPaused ? 'Play' : 'Pausa'; }
         function openGuide() { guidePopup.classList.remove('hidden'); setTimeout(() => MathJax.typesetPromise(), 10); }
@@ -791,10 +801,12 @@
             if (e.code === 'Space' || e.type === 'mousedown' || e.type === 'touchstart') {
                 e.preventDefault();
                 if (gameState === 'simulation') {
+                    if (isPaused) return;
                     bird.VELOCITY = -bird.LIFT;
                     impulseTimer = 20;
                     playJumpSound();
                 } else if (gameState === 'game') {
+                    if (isPaused) return;
                     bird.VELOCITY = -bird.LIFT;
                     playJumpSound();
                 }
@@ -824,7 +836,7 @@
         mobilePanelCloseBtn.addEventListener('click', closeMobilePanel);
         mobilePanelOverlay.addEventListener('click', closeMobilePanel);
         
-        window.onload=()=>{ resizeCanvas(); setup('game'); };
+        window.onload=()=>{ resizeCanvas(); setup('simulation'); startScreenLoop(); };
         document.addEventListener('keydown',handleInput);canvas.addEventListener('mousedown',handleInput);canvas.addEventListener('touchstart',handleInput);window.addEventListener('resize', resizeCanvas);
         
         function updateSliderLabels(){
@@ -832,6 +844,15 @@
             const mass = parseFloat(massSlider.value).toFixed(1);
             liftValue.textContent=lift; mobileLiftValue.textContent=lift;
             massValue.textContent=mass; mobileMassValue.textContent=mass;
+        }
+
+        function startScreenLoop(){if(gameState!=='start')return;ctx.clearRect(0,0,canvas.width,canvas.height);manageEnvironment();bird.VELOCITY+=bird.GRAVITY;bird.y+=bird.VELOCITY;if(bird.y + bird.HEIGHT/2 > canvas.height){bird.y = canvas.height - bird.HEIGHT/2; bird.VELOCITY = 0;}drawBird();frameCount++;requestAnimationFrame(startScreenLoop)}
+        function drawRingPart(radiusX, radiusY, lineWidth, color, isBack) {
+             ctx.strokeStyle = color;
+             ctx.lineWidth = lineWidth;
+             ctx.beginPath();
+             ctx.ellipse(0, 0, radiusX, radiusY, 0, isBack ? Math.PI : 0, isBack ? 2 * Math.PI : Math.PI);
+             ctx.stroke();
         }
 
     </script>
