@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Physics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- MathJax para renderizar ecuaciones LaTeX -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto Mono', monospace;
+            overflow: hidden;
+        }
+        .font-game {
+             font-family: 'Press Start 2P', cursive;
+        }
+        canvas {
+            display: block;
+            transition: background 0.5s ease;
+        }
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        /* Estilo para los sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #FFD700;
+            cursor: pointer;
+            margin-top: -8px;
+            border: 2px solid #DAA520;
+            box-shadow: 0 0 5px #FFD700;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+        }
+        .control-button, .planet-button, .graph-button {
+            @apply bg-gray-700/50 text-white text-xs py-2 px-3 rounded-lg hover:bg-gray-600/70 transition-colors duration-200 flex items-center justify-center gap-2;
+        }
+        .planet-button.active, .graph-button.active {
+            @apply bg-blue-500/80 ring-2 ring-blue-300;
+        }
+        .sim-panel {
+            @apply bg-slate-900/70 backdrop-blur-sm p-4 rounded-lg border border-slate-700 shadow-lg;
+        }
+        /* Estilos para el Popup de la Guía */
+        #guidePopup .sim-panel {
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #guideContent {
+            overflow-y: auto;
+            padding-right: 15px; /* Espacio para el scrollbar */
+        }
+        #guideContent::-webkit-scrollbar { width: 8px; }
+        #guideContent::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+        #guideContent::-webkit-scrollbar-thumb { background: #FFD700; border-radius: 4px; }
+        #guideContent::-webkit-scrollbar-thumb:hover { background: #f0c400; }
+        #closeGuideBtn {
+            font-size: 2rem; font-weight: bold; line-height: 1;
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            background-color: rgba(0,0,0,0.3);
+            transition: background-color 0.2s;
+        }
+        #closeGuideBtn:hover {
+            background-color: rgba(255,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center h-screen m-0">
+
+    <div id="gameContainer" class="relative w-full h-full max-w-screen-lg max-h-screen-md shadow-2xl overflow-hidden">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Pantalla de Inicio -->
+        <div id="startScreen" class="absolute inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center text-white text-center p-4 z-20">
+            <h1 class="text-5xl md:text-7xl font-bold text-shadow mb-4 font-game">Flappy Physics</h1>
+            <p class="text-lg md:text-xl mb-12 text-shadow font-game">Un laboratorio de física interactivo</p>
+            <button id="simModeButton" class="font-game bg-blue-400 text-gray-800 font-bold py-4 px-8 rounded-lg text-2xl shadow-lg transform hover:scale-105 transition-transform duration-200 border-4 border-blue-500">
+                Iniciar Simulación
+            </button>
+        </div>
+
+        <!-- HUD de Simulación -->
+        <div id="simulationHud" class="absolute inset-0 pointer-events-none text-white p-4 hidden z-10">
+            
+             <!-- Panel Izquierdo Unificado -->
+            <div class="absolute top-4 left-4 flex flex-col gap-4 max-w-[260px] w-full pointer-events-auto">
+                <div class="sim-panel">
+                    <h3 class="text-base mb-2 text-yellow-300 font-bold">Datos de Vuelo</h3>
+                    <p class="text-sm">Tiempo: <span id="hudTime">0.00</span> s</p>
+                    <p class="text-sm">Altura: <span id="hudHeight">0.00</span> m</p>
+                    <p class="text-sm">Velocidad: <span id="hudVelocity">0.00</span> m/s</p>
+                    <p class="text-sm">Aceleración: <span id="hudAcceleration">0.00</span> m/s²</p>
+                    
+                    <h3 class="text-base mt-4 mb-2 text-yellow-300 font-bold">Gráficas de Movimiento</h3>
+                    <div id="graphPanel" class="flex flex-col flex-grow min-h-0 gap-2">
+                         <div class="bg-black/20 rounded-md p-1 relative h-24">
+                             <canvas id="graphY"></canvas>
+                         </div>
+                         <div class="bg-black/20 rounded-md p-1 relative h-24">
+                             <canvas id="graphV"></canvas>
+                         </div>
+                         <div class="bg-black/20 rounded-md p-1 relative h-24">
+                             <canvas id="graphA"></canvas>
+                         </div>
+                    </div>
+                </div>
+                 <div id="didacticTip" class="text-xs text-cyan-300 italic h-10 mt-2"></div>
+            </div>
+
+            <!-- Panel Derecho Unificado -->
+            <div id="simulationPanel" class="absolute top-4 right-4 h-auto w-full max-w-[240px] pointer-events-auto">
+                <div class="sim-panel flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="pausePlayBtn" class="text-base w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-lg transition-all">Pausa</button>
+                            <button id="exitButton" class="text-base w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-3 rounded-lg transition-all">Salir</button>
+                        </div>
+                        <button id="guideButton" class="text-base w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg transition-all">Guía</button>
+                    </div>
+
+                    <div>
+                         <h3 class="text-base mb-2 text-yellow-300 font-bold">Parámetros Físicos</h3>
+                        <label class="block mb-1 text-sm">Impulso (Δv): <span id="liftValue">9.0</span> m/s</label>
+                        <input type="range" id="liftSlider" min="1" max="15" step="0.1" value="9">
+                         <label class="block mb-1 text-sm mt-2">Masa: <span id="massValue">1.0</span> kg</label>
+                        <input type="range" id="massSlider" min="0.1" max="5" step="0.1" value="1.0">
+                    </div>
+                    
+                    <div class="flex flex-col flex-grow min-h-0">
+                         <h3 class="text-base mb-2 text-yellow-300 font-bold">Entorno Planetario</h3>
+                        <div class="grid grid-cols-3 gap-2 mb-2 text-[10px]">
+                            <button id="earthBtn" class="planet-button">Tierra</button>
+                            <button id="moonBtn" class="planet-button">Luna</button>
+                            <button id="marsBtn" class="planet-button">Marte</button>
+                            <button id="jupiterBtn" class="planet-button">Júpiter</button>
+                            <button id="saturnBtn" class="planet-button">Saturno</button>
+                            <button id="sunBtn" class="planet-button">Sol</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- POPUP GUÍA: Este es el contenido de la guía que se muestra en la simulación. -->
+            <div id="guidePopup" class="absolute inset-0 bg-black/80 flex items-center justify-center z-40 hidden pointer-events-auto p-4">
+                <div class="sim-panel max-w-lg w-full text-left relative">
+                    <button id="closeGuideBtn" class="absolute top-3 right-3 text-white">&times;</button>
+                    <h2 class="text-2xl text-yellow-300 font-bold mb-4 font-game text-center">Guía de Simulación</h2>
+                    <div id="guideContent" class="space-y-3 text-sm">
+                        <p>¡Bienvenido a Flappy Physics! Esto es un simulador de **caída libre y tiro vertical**.</p>
+                        <p><strong class="text-yellow-400">¿Qué puedes hacer?</strong> Manipula las condiciones de un vuelo para entender conceptos como la gravedad, el impulso y la masa.</p>
+                        <ul class="list-disc list-inside space-y-2">
+                            <li><strong>Parámetros Físicos:</strong> Usa los deslizadores para cambiar el <strong class="text-yellow-400">Impulso (Δv)</strong> y la <strong class="text-yellow-400">Masa</strong>.</li>
+                            <li><strong>Entorno Planetario:</strong> Cambia la gravedad para ver cómo afecta al movimiento.</li>
+                            <li><strong>Gráficas:</strong> Analiza las 3 gráficas para ver cómo la Altura (y), Velocidad (v) y Aceleración (a) cambian en tiempo real.</li>
+                        </ul>
+                         <h3 class="text-lg text-yellow-300 font-bold pt-2 border-t border-slate-700/50">Ecuaciones Clave</h3>
+                         <p>El movimiento del pájaro se rige por las ecuaciones del Movimiento Rectilíneo Uniformemente Acelerado (MRUA):</p>
+                         <div class="text-center my-2 text-base">
+                             <p>\( y(t) = y_0 + v_0 t + \frac{1}{2} g t^2 \)</p>
+                             <p>\( F_{gravedad} = m \cdot g \)</p>
+                         </div>
+                         <p class="text-xs italic">Donde <strong>y(t)</strong> es la altura en el tiempo <strong>t</strong>, <strong>v₀</strong> es la velocidad inicial, <strong>y₀</strong> la altura inicial, y <strong>g</strong> es la aceleración de la gravedad.</p>
+                        <p class="pt-2 border-t border-slate-700/50"><strong class="text-yellow-400">Concepto Clave:</strong> En ausencia de aire, todos los objetos caen con la misma aceleración. ¡Comprueba si cambiar la masa del pájaro afecta su aceleración en la gráfica!</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- Referencias a Elementos del DOM ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('startScreen');
+        const simulationHud = document.getElementById('simulationHud');
+        const exitButton = document.getElementById('exitButton');
+        const simModeButton = document.getElementById('simModeButton');
+        const hudTime = document.getElementById('hudTime');
+        const hudHeight = document.getElementById('hudHeight');
+        const hudVelocity = document.getElementById('hudVelocity');
+        const hudAcceleration = document.getElementById('hudAcceleration');
+        const liftSlider = document.getElementById('liftSlider');
+        const massSlider = document.getElementById('massSlider');
+        const liftValue = document.getElementById('liftValue');
+        const massValue = document.getElementById('massValue');
+        const graphCanvasY = document.getElementById('graphY');
+        const graphCanvasV = document.getElementById('graphV');
+        const graphCanvasA = document.getElementById('graphA');
+        const graphCtxY = graphCanvasY.getContext('2d');
+        const graphCtxV = graphCanvasV.getContext('2d');
+        const graphCtxA = graphCanvasA.getContext('2d');
+        const didacticTip = document.getElementById('didacticTip');
+        const planetButtons = { 
+            tierra: document.getElementById('earthBtn'), 
+            luna: document.getElementById('moonBtn'), 
+            marte: document.getElementById('marsBtn'), 
+            jupiter: document.getElementById('jupiterBtn'),
+            saturno: document.getElementById('saturnBtn'),
+            sol: document.getElementById('sunBtn')
+        };
+        const pausePlayBtn = document.getElementById('pausePlayBtn');
+        const simulationPanel = document.getElementById('simulationPanel');
+        const guideButton = document.getElementById('guideButton');
+        const guidePopup = document.getElementById('guidePopup');
+        const closeGuideBtn = document.getElementById('closeGuideBtn');
+
+        // --- Estado del Juego y Simulación ---
+        let gameState = 'start', isPaused = false, currentPlanet = 'tierra';
+        let bird, frameCount = 0, clouds, stars, impulseTimer = 0, simulationTime = 0;
+        let history = { y: [], v: [], a: [] };
+        let audioCtx;
+        let lunaCraters = [];
+        
+        // --- Constantes Físicas ---
+        const PIXELS_PER_METER = 20, FPS = 60;
+        const GRAVITY_PRESETS = {
+            tierra: { g: 9.81, bg: 'linear-gradient(to top, #4A90E2 0%, #87CEEB 100%)', planetColor: '#4169E1' },
+            luna: { g: 1.62, bg: 'linear-gradient(to top, #0c0e1a 0%, #2c3e50 100%)', planetColor: '#B0C4DE' },
+            marte: { g: 3.71, bg: 'linear-gradient(to top, #e67e22 0%, #d35400 100%)', planetColor: '#BC5835' },
+            jupiter: { g: 24.79, bg: 'linear-gradient(to top, #c9a888 0%, #8a6c4c 100%)', planetColor: '#DEB887' },
+            saturno: { g: 10.44, bg: 'linear-gradient(to top, #2c3e50 0%, #1a222f 100%)', planetColor: '#E3D8B8' },
+            sol: { g: 45.0, bg: 'linear-gradient(to top, #111 0%, #000 100%)', planetColor: '#FFD700' }
+        };
+        const EARTH_GRAVITY_CANVAS = (GRAVITY_PRESETS.tierra.g * PIXELS_PER_METER) / (FPS * FPS);
+        const BIRD_PROPS = { WIDTH: 50, HEIGHT: 40, LIFT: 9, VELOCITY: 0, MASS: 1.0, GRAVITY: EARTH_GRAVITY_CANVAS };
+
+        // --- Funciones Principales ---
+        function initAudio() {
+            if (!audioCtx) {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                } catch(e) { console.error("Web Audio API is not supported in this browser"); }
+            }
+        }
+
+        function playJumpSound() {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function resizeCanvas() {
+            const container = document.getElementById('gameContainer');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            [graphCanvasY, graphCanvasV, graphCanvasA].forEach(graphCanvas => {
+                if (graphCanvas) {
+                    graphCanvas.width = graphCanvas.parentElement.clientWidth;
+                    graphCanvas.height = graphCanvas.parentElement.clientHeight;
+                }
+            });
+        }
+
+        function setup(resetBirdPos = true) {
+            if(resetBirdPos) bird = { ...BIRD_PROPS, x: canvas.width / 2.5, y: canvas.height / 2 };
+            clouds = [];
+            setupStars();
+            frameCount = 0; simulationTime = 0;
+            history = { y: [], v: [], a: [] };
+            
+            setupPlanetDetails();
+            setGravity('tierra');
+            liftSlider.value = 9;
+            massSlider.value = 1.0;
+            bird.LIFT = (parseFloat(liftSlider.value) * PIXELS_PER_METER) / FPS;
+            bird.MASS = 1.0;
+            pausePlayBtn.textContent = 'Pausa';
+            updateSliderLabels();
+        }
+
+        function gameLoop() {
+            if (gameState === 'start') return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            manageEnvironment();
+            if(currentPlanet !== 'espacio') drawPlanet();
+            if (!isPaused) updateState();
+            drawState();
+            frameCount++;
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updateState() {
+             updateBird();
+             if (bird.y - bird.HEIGHT / 2 < 0) bird.y = bird.HEIGHT/2;
+             if (bird.y + bird.HEIGHT / 2 > canvas.height) bird.y = canvas.height - bird.HEIGHT / 2;
+             if (bird.y === bird.HEIGHT / 2 || bird.y === canvas.height - bird.HEIGHT / 2) bird.VELOCITY = 0;
+             updateHud();
+             simulationTime += 1/FPS;
+        }
+        
+        function drawState() {
+            drawTrajectory();
+            drawBird();
+            drawVectors();
+            drawAllGraphs();
+        }
+        
+        function updateBird() {
+             bird.VELOCITY += bird.GRAVITY;
+             bird.y += bird.VELOCITY;
+        }
+
+        function updateHud() {
+            const heightMeters = (canvas.height - bird.y) / PIXELS_PER_METER;
+            const velocityMs = (-bird.VELOCITY * FPS) / PIXELS_PER_METER;
+            const accelerationMs2 = (bird.GRAVITY * FPS * FPS) / PIXELS_PER_METER;
+            hudTime.textContent = simulationTime.toFixed(2);
+            hudHeight.textContent = heightMeters.toFixed(2);
+            hudVelocity.textContent = velocityMs.toFixed(2);
+            hudAcceleration.textContent = (-accelerationMs2).toFixed(2);
+            history.y.push(Math.max(0, heightMeters));
+            history.v.push(velocityMs);
+            history.a.push(-accelerationMs2);
+            const maxHistory = 300;
+            if(history.y.length > maxHistory) { history.y.shift(); history.v.shift(); history.a.shift(); }
+        }
+
+        function drawPlanet() {
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height * 1.5);
+            const rotation = frameCount * 0.0005;
+            ctx.rotate(rotation);
+            ctx.beginPath();
+            ctx.arc(0, 0, canvas.height, 0, 2 * Math.PI);
+            ctx.fillStyle = GRAVITY_PRESETS[currentPlanet].planetColor;
+            ctx.fill();
+            ctx.clip(); 
+            switch(currentPlanet) {
+                case 'tierra':
+                    const atmosphereGrad = ctx.createRadialGradient(0, 0, canvas.height * 0.95, 0, 0, canvas.height);
+                    atmosphereGrad.addColorStop(0, 'transparent');
+                    atmosphereGrad.addColorStop(1, 'rgba(135, 206, 250, 0.4)');
+                    ctx.fillStyle = atmosphereGrad;
+                    ctx.fillRect(-canvas.height, -canvas.height, canvas.height * 2, canvas.height * 2);
+
+                    ctx.fillStyle = '#228B22'; // Verde continentes
+                    ctx.beginPath();
+                    ctx.moveTo(50, -200); ctx.bezierCurveTo(200, -150, 250, 0, 150, 100); ctx.bezierCurveTo(50, 250, -150, 150, 50, -200);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(-150, 50); ctx.bezierCurveTo(-250, 150, -200, 300, -100, 250); ctx.bezierCurveTo(0, 200, -50, 100, -150, 50);
+                    ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(250, 250, 80, 50, Math.PI / 4, 0, 2 * Math.PI); ctx.fill();
+
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                    ctx.beginPath();
+                    ctx.ellipse(-100, -150, 150, 60, Math.PI / -6, 0, 2 * Math.PI);
+                    ctx.ellipse(150, 100, 200, 80, Math.PI / 4, 0, 2 * Math.PI);
+                    ctx.ellipse(0, 250, 180, 70, Math.PI / 3, 0, 2 * Math.PI);
+                    ctx.fill();
+                    break;
+                case 'luna':
+                    ctx.fillStyle = 'rgba(0,0,0,0.07)';
+                    ctx.beginPath();
+                    ctx.ellipse(-150, 50, 200, 150, Math.PI / 4, 0, 2 * Math.PI);
+                    ctx.ellipse(200, -100, 180, 130, -Math.PI / 3, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+                    lunaCraters.forEach(crater => {
+                        ctx.beginPath();
+                        ctx.arc(crater.x, crater.y, crater.radius, 0, 2 * Math.PI);
+                        ctx.fill();
+                    });
+                    break;
+                case 'marte':
+                     ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                     ctx.beginPath();
+                     ctx.arc(0, -canvas.height + 30, 180, 0, 2 * Math.PI);
+                     ctx.fill();
+                     ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                     ctx.beginPath();
+                     ctx.ellipse(-50, 100, 180, 100, Math.PI / 3, 0, 2*Math.PI);
+                     ctx.ellipse(200, -150, 150, 90, -Math.PI / 4, 0, 2*Math.PI);
+                     ctx.ellipse(50, 300, 200, 120, -Math.PI / 5, 0, 2*Math.PI);
+                     ctx.fill();
+                     ctx.fillStyle = 'rgba(100, 40, 20, 0.3)';
+                     ctx.beginPath();
+                     ctx.ellipse(-150, -200, 120, 60, Math.PI / 5, 0, 2 * Math.PI);
+                     ctx.ellipse(100, 200, 250, 100, -Math.PI / 7, 0, 2 * Math.PI);
+                     ctx.fill();
+                     ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 2;
+                     ctx.beginPath();
+                     ctx.moveTo(-200, -100); ctx.bezierCurveTo(0, 0, 100, 200, 300, 250);
+                     ctx.moveTo(-250, 150); ctx.bezierCurveTo(-100, 50, 50, 100, 200, -50);
+                     ctx.stroke();
+                    break;
+                case 'jupiter':
+                    const greatRedSpot = { x: 150, y: -100, w: 120, h: 70 };
+                    for(let i=-6; i<7; i++) {
+                        ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 230, 200, 0.3)' : 'rgba(130, 80, 50, 0.3)';
+                        ctx.beginPath(); let y_base = i * 80;
+                        ctx.moveTo(-canvas.height * 1.5, y_base - 40);
+                        for (let x = -canvas.height * 1.5; x < canvas.height * 1.5; x += 50) {
+                            ctx.lineTo(x, y_base + Math.sin(x / 200 + i) * 20 - 40);
+                        }
+                        ctx.lineTo(canvas.height * 1.5, y_base + 40); ctx.lineTo(-canvas.height * 1.5, y_base + 40);
+                        ctx.closePath(); ctx.fill();
+                    }
+                    ctx.fillStyle = '#c5693c'; ctx.beginPath();
+                    ctx.ellipse(greatRedSpot.x, greatRedSpot.y, greatRedSpot.w, greatRedSpot.h, -Math.PI / 10, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.fillStyle = 'rgba(90, 40, 20, 0.5)'; ctx.beginPath();
+                    ctx.ellipse(greatRedSpot.x + 10, greatRedSpot.y + 5, greatRedSpot.w, greatRedSpot.h, -Math.PI / 10, 0, 2 * Math.PI);
+                    ctx.fill();
+                    break;
+                case 'saturno':
+                    const saturnRadius = canvas.height * 0.6;
+                    const tilt = -0.3;
+                    ctx.save();
+                    ctx.rotate(tilt);
+
+                    // Back rings
+                    drawRingPart(saturnRadius * 1.9, saturnRadius * 0.65, saturnRadius * 0.2, 'rgba(180, 170, 160, 0.7)', true);
+                    drawRingPart(saturnRadius * 1.5, saturnRadius * 0.5, saturnRadius * 0.25, 'rgba(210, 200, 180, 0.8)', true);
+                    
+                    ctx.restore(); 
+
+                    let saturnGrad = ctx.createRadialGradient(-30, -30, 10, 0, 0, saturnRadius);
+                    saturnGrad.addColorStop(0, '#F5EAC7'); saturnGrad.addColorStop(1, '#D2B48C');
+                    ctx.fillStyle = saturnGrad;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, saturnRadius, 0, 2 * Math.PI);
+                    ctx.fill();
+
+                    ctx.save();
+                    ctx.rotate(tilt);
+                    
+                    drawRingPart(saturnRadius * 1.9, saturnRadius * 0.65, saturnRadius * 0.2, 'rgba(180, 170, 160, 0.7)', false);
+                    drawRingPart(saturnRadius * 1.5, saturnRadius * 0.5, saturnRadius * 0.25, 'rgba(210, 200, 180, 0.8)', false);
+
+                    ctx.restore();
+                    break;
+                 case 'sol':
+                    ctx.rotate(-rotation); // Cancel planet rotation for static sun
+                    const sunRadius = canvas.height * 0.8;
+                    
+                    let sunGrad = ctx.createRadialGradient(-50, -50, 20, 0, 0, sunRadius);
+                    sunGrad.addColorStop(0, 'white');
+                    sunGrad.addColorStop(0.5, '#FFD700');
+                    sunGrad.addColorStop(1, '#FF8C00');
+                    ctx.fillStyle = sunGrad;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, sunRadius, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    // Flares
+                    ctx.strokeStyle = `rgba(255, 200, 100, ${0.5 + Math.sin(frameCount * 0.1) * 0.2})`;
+                    ctx.lineWidth = 3;
+                    for (let i = 0; i < 7; i++) {
+                        const angle = (i * Math.PI * 2 / 7) + frameCount * 0.002;
+                        const length = sunRadius + 20 + Math.sin(frameCount * 0.05 + i * 2) * 20;
+                        ctx.beginPath();
+                        ctx.moveTo(Math.cos(angle) * sunRadius, Math.sin(angle) * sunRadius);
+                        ctx.quadraticCurveTo(
+                            Math.cos(angle + 0.1) * (sunRadius + length) / 2, Math.sin(angle + 0.1) * (sunRadius + length) / 2,
+                            Math.cos(angle) * length, Math.sin(angle) * length
+                        );
+                        ctx.stroke();
+                    }
+                    break;
+            }
+            ctx.restore();
+        }
+
+        function drawRingPart(radiusX, radiusY, lineWidth, color, isBack) {
+             ctx.strokeStyle = color;
+             ctx.lineWidth = lineWidth;
+             ctx.beginPath();
+             ctx.ellipse(0, 0, radiusX, radiusY, 0, isBack ? Math.PI : 0, isBack ? 2 * Math.PI : Math.PI);
+             ctx.stroke();
+        }
+
+        function drawTrajectory() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            history.y.forEach((h, i) => {
+                if (i % 5 === 0) {
+                    const x = bird.x - ((history.y.length - 1 - i) * 4);
+                    const y = canvas.height - (h * PIXELS_PER_METER);
+                    if (x > 0) {
+                        ctx.beginPath();
+                        ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                        ctx.fill();
+                    }
+                }
+            });
+        }
+        function drawAllGraphs() {
+            drawGraph(graphCtxY, history.y, 'Altura (y)');
+            drawGraph(graphCtxV, history.v, 'Velocidad (v)');
+            drawGraph(graphCtxA, history.a, 'Aceleración (a)');
+        }
+        
+        function drawGraph(graphCtx, data, label) {
+            const w = graphCtx.canvas.width;
+            const h = graphCtx.canvas.height;
+            graphCtx.clearRect(0, 0, w, h);
+            
+            graphCtx.fillStyle = "white"; 
+            graphCtx.font = "10px 'Press Start 2P'"; 
+            graphCtx.textAlign = 'left';
+            graphCtx.fillText(label, 10, 15); 
+
+            if (!data || data.length < 2) return;
+
+            const maxAbs = Math.max(...data.map(val => Math.abs(val)), 1);
+            const minVal = label === 'Altura (y)' ? 0 : -maxAbs;
+            const maxVal = label === 'Altura (y)' ? Math.max(...data, 1) : maxAbs;
+
+            graphCtx.strokeStyle = '#FFD700'; 
+            graphCtx.lineWidth = 2; 
+            graphCtx.beginPath();
+            data.forEach((val, i) => { 
+                if (isNaN(val)) return;
+                const x = (i / (data.length - 1)) * w;
+                const y = h - ((val - minVal) / (maxVal - minVal || 1)) * h;
+                if (i === 0) graphCtx.moveTo(x, y); else graphCtx.lineTo(x, y); 
+            });
+            graphCtx.stroke();
+
+            const lastVal = data[data.length - 1];
+            if (lastVal !== undefined) {
+                graphCtx.fillStyle = '#FFD700';
+                graphCtx.font = "11px 'Roboto Mono'";
+                graphCtx.textAlign = 'right';
+                graphCtx.fillText(lastVal.toFixed(1), w - 5, 15);
+            }
+        }
+
+        function setGravity(planetName) {
+            currentPlanet = planetName;
+            const preset = GRAVITY_PRESETS[planetName];
+            const gInCanvasUnits = (preset.g * PIXELS_PER_METER) / (FPS * FPS);
+            bird.GRAVITY = gInCanvasUnits; 
+            canvas.style.background = preset.bg;
+            Object.values(planetButtons).forEach(btn => btn.classList.remove('active'));
+            planetButtons[planetName].classList.add('active');
+        }
+        function showTip(message) { didacticTip.textContent = message; setTimeout(() => { didacticTip.textContent = '' }, 4000); }
+        function startSimulation() { 
+            initAudio(); 
+            setup(); 
+            gameState = 'playing'; 
+            isPaused = false; 
+            startScreen.classList.add('hidden'); 
+            simulationHud.classList.remove('hidden'); 
+            resizeCanvas(); 
+            gameLoop(); 
+        }
+
+        function goToMenu() { 
+            gameState = 'start'; 
+            simulationHud.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            setup(); 
+            startScreenLoop(); 
+        }
+
+        simModeButton.addEventListener('click', startSimulation); 
+        exitButton.addEventListener('click', goToMenu); 
+        pausePlayBtn.addEventListener('click', () => { isPaused = !isPaused; pausePlayBtn.textContent = isPaused ? 'Play' : 'Pausa'; });
+        guideButton.addEventListener('click', () => {
+            guidePopup.classList.remove('hidden');
+            setTimeout(() => MathJax.typesetPromise(), 10);
+        });
+        closeGuideBtn.addEventListener('click', () => guidePopup.classList.add('hidden'));
+
+        liftSlider.addEventListener('input', (e) => { 
+            const liftInMs = parseFloat(e.target.value);
+            bird.LIFT = (liftInMs * PIXELS_PER_METER) / FPS;
+            updateSliderLabels(); 
+        });
+        massSlider.addEventListener('input', e => { bird.MASS = parseFloat(e.target.value); updateSliderLabels(); showTip("Nota: La masa no afecta la caída libre. ¡'g' es la misma para todos!"); });
+        Object.entries(planetButtons).forEach(([name, btn]) => btn.addEventListener('click', () => setGravity(name)));
+        
+        function handleInput(e) { if (e.code === 'Space' || e.type === 'mousedown' || e.type === 'touchstart') { e.preventDefault(); if (gameState === 'playing') { jump(); } } }
+        
+        window.onload=()=>{
+            resizeCanvas();
+            setup();
+            startScreenLoop();
+        };
+
+        function setupPlanetDetails() { 
+            lunaCraters = []; 
+            for (let i = 0; i < 80; i++) { 
+                lunaCraters.push({ x: Math.random() * 1600 - 800, y: Math.random() * 800 - 400, radius: Math.random() * 50 + 5 }); 
+            } 
+        }
+        function setupStars() {
+            stars = [];
+            for (let i = 0; i < 150; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 1.5,
+                    alpha: Math.random(),
+                    twinkleOffset: Math.random() * 2 * Math.PI,
+                    twinkleSpeed: Math.random() * 0.03 + 0.01
+                });
+            }
+        }
+        function manageEnvironment() {
+            if (currentPlanet === 'sol') {
+                drawSunRays();
+                drawStars();
+            } else if (currentPlanet === 'tierra') {
+                drawClouds();
+            } else {
+                drawDistantGalaxy();
+                drawStars();
+            }
+        }
+        
+        function drawSunRays() {
+            const sunCenterX = canvas.width / 2;
+            const sunCenterY = canvas.height * 1.5;
+            const numRays = 16;
+            for (let i = 0; i < numRays; i++) {
+                ctx.save();
+                ctx.translate(sunCenterX, sunCenterY);
+                const angle = (i / numRays) * Math.PI * 2 + frameCount * 0.001;
+                ctx.rotate(angle);
+                const rayGrad = ctx.createLinearGradient(150, 0, canvas.width, 0);
+                const alpha = 0.1 + Math.sin(frameCount * 0.05 + i * 5) * 0.05;
+                rayGrad.addColorStop(0, `rgba(255, 220, 180, ${alpha})`);
+                rayGrad.addColorStop(1, 'rgba(255, 220, 180, 0)');
+                ctx.fillStyle = rayGrad;
+                ctx.beginPath();
+                ctx.moveTo(150, 0);
+                ctx.lineTo(canvas.width, -50);
+                ctx.lineTo(canvas.width, 50);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function drawDistantGalaxy() {
+            ctx.save();
+            ctx.translate(canvas.width * 0.8, canvas.height * 0.25);
+            ctx.rotate(-0.4 + frameCount * -0.0001);
+            let galaxyGrad = ctx.createRadialGradient(0,0,10, 0,0,150);
+            galaxyGrad.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
+            galaxyGrad.addColorStop(0.3, 'rgba(200, 200, 255, 0.1)');
+            galaxyGrad.addColorStop(1, 'rgba(150, 150, 255, 0)');
+            ctx.fillStyle = galaxyGrad;
+            for(let i = 0; i < 800; i++) {
+                let angle = i * 0.15;
+                let dist = Math.pow(i, 0.7);
+                let x = Math.cos(angle) * dist;
+                let y = Math.sin(angle) * dist;
+                ctx.beginPath();
+                ctx.arc(x, y, Math.random() * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        function drawClouds(){if(frameCount%150===0){clouds.push({x:canvas.width,y:Math.random()*canvas.height*.5,size:Math.random()*20+20,speed:Math.random()*.5+.5})}ctx.fillStyle='rgba(255, 255, 255, 0.9)';clouds.forEach(cloud=>{cloud.x-=cloud.speed;ctx.beginPath();ctx.ellipse(cloud.x, cloud.y,cloud.size*2,cloud.size,0,0,2*Math.PI);ctx.fill()});clouds=clouds.filter(cloud=>cloud.x+cloud.size*2>0)}
+        
+        function drawStars() {
+            stars.forEach(star => {
+                star.alpha = 0.5 + 0.5 * Math.sin(star.twinkleOffset + frameCount * star.twinkleSpeed);
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.radius, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        }
+        function drawBird(){ctx.save();const angle=bird.VELOCITY/15;ctx.translate(bird.x,bird.y);ctx.rotate(angle);const gradient=ctx.createRadialGradient(0,0,5,0,0,bird.WIDTH/2);gradient.addColorStop(0,'#FFEB3B');gradient.addColorStop(1,'#FBC02D');ctx.fillStyle=gradient;ctx.strokeStyle='#333';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,bird.WIDTH/2,bird.HEIGHT/2,0,0,2*Math.PI);ctx.fill();ctx.stroke();const wingFlap=Math.sin(frameCount*.3)*5;ctx.fillStyle='#FFF9C4';ctx.beginPath();ctx.moveTo(-bird.WIDTH/5,-wingFlap);ctx.quadraticCurveTo(0,-bird.HEIGHT/3-wingFlap,bird.WIDTH/4,-wingFlap);ctx.quadraticCurveTo(0,bird.HEIGHT/4-wingFlap,-bird.WIDTH/5,-wingFlap);ctx.fill();ctx.stroke();ctx.fillStyle='white';ctx.beginPath();ctx.arc(bird.WIDTH/4,-bird.HEIGHT/6,5,0,2*Math.PI);ctx.fill();ctx.stroke();ctx.fillStyle='black';ctx.beginPath();ctx.arc(bird.WIDTH/4+1,-bird.HEIGHT/6,2,0,2*Math.PI);ctx.fill();ctx.fillStyle='#F57C00';ctx.beginPath();ctx.moveTo(bird.WIDTH/2-5,-3);ctx.lineTo(bird.WIDTH/2+8,0);ctx.lineTo(bird.WIDTH/2-5,3);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}
+        function startScreenLoop(){if(gameState!=='start')return;ctx.clearRect(0,0,canvas.width,canvas.height);manageEnvironment();bird.VELOCITY+=BIRD_PROPS.GRAVITY;bird.y+=bird.VELOCITY;if(bird.y + bird.HEIGHT/2 > canvas.height){bird.y = canvas.height - bird.HEIGHT/2; bird.VELOCITY = 0;}drawBird();frameCount++;requestAnimationFrame(startScreenLoop)}
+        document.addEventListener('keydown',handleInput);canvas.addEventListener('mousedown',handleInput);canvas.addEventListener('touchstart',handleInput);window.addEventListener('resize', resizeCanvas);
+        function drawVectors(){const birdCenterX=bird.x;const birdCenterY=bird.y;ctx.save();ctx.strokeStyle='red';ctx.lineWidth=3;ctx.fillStyle='red';ctx.beginPath();ctx.moveTo(birdCenterX,birdCenterY);ctx.lineTo(birdCenterX,birdCenterY+50);ctx.lineTo(birdCenterX-5,birdCenterY+40);ctx.moveTo(birdCenterX,birdCenterY+50);ctx.lineTo(birdCenterX+5,birdCenterY+40);ctx.stroke();ctx.font="16px 'Press Start 2P'";ctx.fillText("g",birdCenterX+10,birdCenterY+45);ctx.restore();if(impulseTimer>0){ctx.save();ctx.strokeStyle='#00FF00';ctx.lineWidth=3;ctx.fillStyle='#00FF00';ctx.beginPath();ctx.moveTo(birdCenterX,birdCenterY);ctx.lineTo(birdCenterX,birdCenterY-50);ctx.lineTo(birdCenterX-5,birdCenterY-40);ctx.moveTo(birdCenterX,birdCenterY-50);ctx.lineTo(birdCenterX+5,birdCenterY-40);ctx.stroke();ctx.font="12px 'Press Start 2P'";ctx.fillText("Impulso",birdCenterX-30,birdCenterY-55);ctx.restore();impulseTimer--}}
+        function jump(){if(gameState==='playing'){playJumpSound();bird.VELOCITY = -bird.LIFT;impulseTimer=20}}
+        function updateSliderLabels(){liftValue.textContent=parseFloat(liftSlider.value).toFixed(1);massValue.textContent=parseFloat(massSlider.value).toFixed(1)}
+    </script>
+</body>
+</html>
+
