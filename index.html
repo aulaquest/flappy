@@ -85,7 +85,7 @@
             background-color: rgba(255,0,0,0.5);
         }
         #mobilePanel {
-             background-color: rgba(15, 23, 42, 0.85); /* More translucent */
+             background-color: rgba(15, 23, 42, 0.75); /* More translucent */
         }
     </style>
 </head>
@@ -354,6 +354,7 @@
         let audioCtx;
         let lunaCraters = [];
         let pipes = [], coins = [], score = 0, coinCount = 0, gameFrame = 0, pipeSpeed = 3;
+        let isMobile = false;
         
         // --- Constantes Físicas ---
         const PIXELS_PER_METER = 20, FPS = 60;
@@ -369,7 +370,7 @@
 
         // --- Funciones de Ayuda y Dibujo ---
         function initAudio() { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { console.error("Web Audio API is not supported in this browser"); } } }
-        function playJumpSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'square'; o.frequency.setValueAtTime(880, audioCtx.currentTime); g.gain.setValueAtTime(0.05, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.1); }
+        function playJumpSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'square'; o.frequency.setValueAtTime(880, audioCtx.currentTime); g.gain.setValueAtTime(0.1, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.1); }
         function playPointSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'triangle'; o.frequency.setValueAtTime(1200, audioCtx.currentTime); g.gain.setValueAtTime(0.1, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.1); }
         function playCoinSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'square'; o.frequency.setValueAtTime(1500, audioCtx.currentTime); g.gain.setValueAtTime(0.15, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.15); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.15); }
         function playGameOverSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'sawtooth'; o.frequency.setValueAtTime(440, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 0.5); g.gain.setValueAtTime(0.3, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.5); }
@@ -387,6 +388,7 @@
             const container = document.getElementById('gameContainer');
             canvas.width = container.clientWidth;
             canvas.height = container.clientHeight;
+            isMobile = canvas.width < 768;
             [graphCanvasY, graphCanvasV, graphCanvasA, mobileGraphCanvasY, mobileGraphCanvasV].forEach(graphCanvas => {
                 if (graphCanvas && graphCanvas.parentElement) {
                     graphCanvas.width = graphCanvas.parentElement.clientWidth;
@@ -413,10 +415,10 @@
                 pausePlayBtn.textContent = 'Pausa'; mobilePausePlayBtn.textContent = 'Pausa';
                 updateSliderLabels();
             } else if (mode === 'game') {
-                bird.GRAVITY = (18 * PIXELS_PER_METER) / (FPS * FPS); 
-                bird.LIFT = (7.5 * PIXELS_PER_METER) / FPS; 
+                bird.GRAVITY = (22 * PIXELS_PER_METER) / (FPS * FPS); 
+                bird.LIFT = (8.0 * PIXELS_PER_METER) / FPS; 
                 canvas.style.background = GRAVITY_PRESETS['tierra'].bg;
-                if (canvas.width < 768) { // Zoom out on mobile
+                if (isMobile) { 
                     bird.WIDTH = 40;
                     bird.HEIGHT = 32;
                 }
@@ -463,7 +465,8 @@
             // Pipes
             if (gameFrame % 90 === 0) {
                 const gapY = Math.random() * (canvas.height - 300) + 150;
-                pipes.push({ x: canvas.width, y: gapY, width: 80, gap: 200, scored: false });
+                const pipeWidth = isMobile ? 65 : 80;
+                pipes.push({ x: canvas.width, y: gapY, width: pipeWidth, gap: 200, scored: false });
 
                 if (Math.random() > 0.5) { // 50% chance to spawn a coin
                     coins.push({ x: canvas.width + 40, y: gapY, radius: 15, collected: false });
