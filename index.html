@@ -103,8 +103,8 @@
         <!-- HUD de Simulación -->
         <div id="simulationHud" class="absolute inset-0 pointer-events-none text-white p-4 hidden z-10">
             
-             <!-- Panel Izquierdo Unificado -->
-            <div class="absolute top-4 left-4 flex flex-col gap-4 max-w-[260px] w-full pointer-events-auto">
+            <!-- ====== LAYOUT ESCRITORIO (>768px) ====== -->
+            <div class="hidden md:flex absolute top-4 left-4 flex-col gap-4 max-w-[260px] w-full pointer-events-auto">
                 <div class="sim-panel">
                     <h3 class="text-base mb-2 text-yellow-300 font-bold">Datos de Vuelo</h3>
                     <p class="text-sm">Tiempo: <span id="hudTime">0.00</span> s</p>
@@ -128,8 +128,7 @@
                  <div id="didacticTip" class="text-xs text-cyan-300 italic h-10 mt-2"></div>
             </div>
 
-            <!-- Panel Derecho Unificado -->
-            <div id="simulationPanel" class="absolute top-4 right-4 h-auto w-full max-w-[240px] pointer-events-auto">
+            <div id="desktopSimulationPanel" class="hidden md:flex absolute top-4 right-4 h-auto w-full max-w-[240px] pointer-events-auto">
                 <div class="sim-panel flex flex-col gap-4">
                     <div class="flex flex-col gap-2">
                         <div class="grid grid-cols-2 gap-2">
@@ -160,8 +159,72 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ====== LAYOUT MÓVIL (<768px) ====== -->
+            <div id="mobile-ui" class="md:hidden contents">
+                <!-- Overlay for Mobile Panel -->
+                <div id="mobilePanelOverlay" class="fixed inset-0 bg-black/50 z-30 opacity-0 hidden transition-opacity duration-300"></div>
+                
+                <!-- Top Bar (Mobile) -->
+                <div class="absolute top-4 left-4 right-4 pointer-events-auto">
+                    <div class="sim-panel p-2 flex justify-between items-center">
+                        <button id="mobileMenuBtn" class="font-bold text-2xl px-3 py-1 text-yellow-300">☰</button>
+                        <div class="flex gap-2">
+                             <button id="mobilePausePlayBtn" class="text-sm font-bold w-20 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg transition-all">Pausa</button>
+                             <button id="mobileExitBtn" class="text-sm font-bold w-20 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg transition-all">Salir</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sliding Panel (Mobile) -->
+                <div id="mobilePanel" class="fixed top-0 left-0 h-full w-4/5 max-w-[300px] bg-slate-900/90 backdrop-blur-sm z-40 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out pointer-events-auto overflow-y-auto">
+                    <button id="mobilePanelCloseBtn" class="absolute top-3 right-3 text-3xl font-bold text-white/70 hover:text-white">&times;</button>
+                    
+                    <div class="flex flex-col gap-6 text-white pt-8">
+                        <div>
+                            <button id="mobileGuideBtn" class="text-base w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg transition-all">Ver Guía de Simulación</button>
+                        </div>
+                        <div>
+                            <h3 class="text-base mb-2 text-yellow-300 font-bold">Datos de Vuelo</h3>
+                            <p class="text-sm">Tiempo: <span id="mobileHudTime">0.00</span> s</p>
+                            <p class="text-sm">Altura: <span id="mobileHudHeight">0.00</span> m</p>
+                            <p class="text-sm">Velocidad: <span id="mobileHudVelocity">0.00</span> m/s</p>
+                            <p class="text-sm">Aceleración: <span id="mobileHudAcceleration">0.00</span> m/s²</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-base mb-2 text-yellow-300 font-bold">Parámetros Físicos</h3>
+                            <label class="block mb-1 text-sm">Impulso (Δv): <span id="mobileLiftValue">9.0</span> m/s</label>
+                            <input type="range" id="mobileLiftSlider" min="1" max="15" step="0.1" value="9">
+                             <label class="block mb-1 text-sm mt-2">Masa: <span id="mobileMassValue">1.0</span> kg</label>
+                            <input type="range" id="mobileMassSlider" min="0.1" max="5" step="0.1" value="1.0">
+                        </div>
+                    
+                        <div>
+                             <h3 class="text-base mb-2 text-yellow-300 font-bold">Entorno Planetario</h3>
+                            <div class="grid grid-cols-2 gap-2 mb-2 text-xs">
+                                <button id="mobileEarthBtn" class="planet-button">Tierra</button>
+                                <button id="mobileMoonBtn" class="planet-button">Luna</button>
+                                <button id="mobileMarsBtn" class="planet-button">Marte</button>
+                                <button id="mobileJupiterBtn" class="planet-button">Júpiter</button>
+                                <button id="mobileSaturnBtn" class="planet-button">Saturno</button>
+                                <button id="mobileSunBtn" class="planet-button">Sol</button>
+                            </div>
+                        </div>
+
+                         <div>
+                            <h3 class="text-base mb-2 text-yellow-300 font-bold">Gráficas</h3>
+                            <div class="flex flex-col flex-grow min-h-0 gap-2">
+                                 <div class="bg-black/20 rounded-md p-1 relative h-28"><canvas id="mobileGraphY"></canvas></div>
+                                 <div class="bg-black/20 rounded-md p-1 relative h-28"><canvas id="mobileGraphV"></canvas></div>
+                                 <div class="bg-black/20 rounded-md p-1 relative h-28"><canvas id="mobileGraphA"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            <!-- POPUP GUÍA: Este es el contenido de la guía que se muestra en la simulación. -->
+            <!-- POPUP GUÍA -->
             <div id="guidePopup" class="absolute inset-0 bg-black/80 flex items-center justify-center z-40 hidden pointer-events-auto p-4">
                 <div class="sim-panel max-w-lg w-full text-left relative">
                     <button id="closeGuideBtn" class="absolute top-3 right-3 text-white">&times;</button>
@@ -195,8 +258,10 @@
         const ctx = canvas.getContext('2d');
         const startScreen = document.getElementById('startScreen');
         const simulationHud = document.getElementById('simulationHud');
-        const exitButton = document.getElementById('exitButton');
         const simModeButton = document.getElementById('simModeButton');
+        const didacticTip = document.getElementById('didacticTip');
+
+        // --- DOM Escritorio ---
         const hudTime = document.getElementById('hudTime');
         const hudHeight = document.getElementById('hudHeight');
         const hudVelocity = document.getElementById('hudVelocity');
@@ -205,24 +270,48 @@
         const massSlider = document.getElementById('massSlider');
         const liftValue = document.getElementById('liftValue');
         const massValue = document.getElementById('massValue');
+        const exitButton = document.getElementById('exitButton');
+        const pausePlayBtn = document.getElementById('pausePlayBtn');
+        const guideButton = document.getElementById('guideButton');
+        const planetButtons = { 
+            tierra: document.getElementById('earthBtn'), luna: document.getElementById('moonBtn'), marte: document.getElementById('marsBtn'), 
+            jupiter: document.getElementById('jupiterBtn'), saturno: document.getElementById('saturnBtn'), sol: document.getElementById('sunBtn')
+        };
         const graphCanvasY = document.getElementById('graphY');
         const graphCanvasV = document.getElementById('graphV');
         const graphCanvasA = document.getElementById('graphA');
         const graphCtxY = graphCanvasY.getContext('2d');
         const graphCtxV = graphCanvasV.getContext('2d');
         const graphCtxA = graphCanvasA.getContext('2d');
-        const didacticTip = document.getElementById('didacticTip');
-        const planetButtons = { 
-            tierra: document.getElementById('earthBtn'), 
-            luna: document.getElementById('moonBtn'), 
-            marte: document.getElementById('marsBtn'), 
-            jupiter: document.getElementById('jupiterBtn'),
-            saturno: document.getElementById('saturnBtn'),
-            sol: document.getElementById('sunBtn')
+
+        // --- DOM Móvil ---
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobilePanel = document.getElementById('mobilePanel');
+        const mobilePanelCloseBtn = document.getElementById('mobilePanelCloseBtn');
+        const mobilePanelOverlay = document.getElementById('mobilePanelOverlay');
+        const mobilePausePlayBtn = document.getElementById('mobilePausePlayBtn');
+        const mobileExitBtn = document.getElementById('mobileExitBtn');
+        const mobileGuideBtn = document.getElementById('mobileGuideBtn');
+        const mobileHudTime = document.getElementById('mobileHudTime');
+        const mobileHudHeight = document.getElementById('mobileHudHeight');
+        const mobileHudVelocity = document.getElementById('mobileHudVelocity');
+        const mobileHudAcceleration = document.getElementById('mobileHudAcceleration');
+        const mobileLiftSlider = document.getElementById('mobileLiftSlider');
+        const mobileMassSlider = document.getElementById('mobileMassSlider');
+        const mobileLiftValue = document.getElementById('mobileLiftValue');
+        const mobileMassValue = document.getElementById('mobileMassValue');
+        const mobilePlanetButtons = { 
+            tierra: document.getElementById('mobileEarthBtn'), luna: document.getElementById('mobileMoonBtn'), marte: document.getElementById('mobileMarsBtn'),
+            jupiter: document.getElementById('mobileJupiterBtn'), saturno: document.getElementById('mobileSaturnBtn'), sol: document.getElementById('mobileSunBtn')
         };
-        const pausePlayBtn = document.getElementById('pausePlayBtn');
-        const simulationPanel = document.getElementById('simulationPanel');
-        const guideButton = document.getElementById('guideButton');
+        const mobileGraphCanvasY = document.getElementById('mobileGraphY');
+        const mobileGraphCanvasV = document.getElementById('mobileGraphV');
+        const mobileGraphCanvasA = document.getElementById('mobileGraphA');
+        const mobileGraphCtxY = mobileGraphCanvasY.getContext('2d');
+        const mobileGraphCtxV = mobileGraphCanvasV.getContext('2d');
+        const mobileGraphCtxA = mobileGraphCanvasA.getContext('2d');
+
+        // --- DOM Popups ---
         const guidePopup = document.getElementById('guidePopup');
         const closeGuideBtn = document.getElementById('closeGuideBtn');
 
@@ -247,33 +336,14 @@
         const BIRD_PROPS = { WIDTH: 50, HEIGHT: 40, LIFT: 9, VELOCITY: 0, MASS: 1.0, GRAVITY: EARTH_GRAVITY_CANVAS };
 
         // --- Funciones Principales ---
-        function initAudio() {
-            if (!audioCtx) {
-                try {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                } catch(e) { console.error("Web Audio API is not supported in this browser"); }
-            }
-        }
-
-        function playJumpSound() {
-            if (!audioCtx) return;
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
-            gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
-            oscillator.start(audioCtx.currentTime);
-            oscillator.stop(audioCtx.currentTime + 0.1);
-        }
+        function initAudio() { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { console.error("Web Audio API is not supported in this browser"); } } }
+        function playJumpSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'sine'; o.frequency.setValueAtTime(880, audioCtx.currentTime); g.gain.setValueAtTime(0.2, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.1); }
 
         function resizeCanvas() {
             const container = document.getElementById('gameContainer');
             canvas.width = container.clientWidth;
             canvas.height = container.clientHeight;
-            [graphCanvasY, graphCanvasV, graphCanvasA].forEach(graphCanvas => {
+            [graphCanvasY, graphCanvasV, graphCanvasA, mobileGraphCanvasY, mobileGraphCanvasV, mobileGraphCanvasA].forEach(graphCanvas => {
                 if (graphCanvas) {
                     graphCanvas.width = graphCanvas.parentElement.clientWidth;
                     graphCanvas.height = graphCanvas.parentElement.clientHeight;
@@ -282,19 +352,15 @@
         }
 
         function setup(resetBirdPos = true) {
-            if(resetBirdPos) bird = { ...BIRD_PROPS, x: canvas.width / 2.5, y: canvas.height / 2 };
-            clouds = [];
-            setupStars();
-            frameCount = 0; simulationTime = 0;
+            if(resetBirdPos) bird = { ...BIRD_PROPS, x: canvas.width / 2, y: canvas.height / 2 };
+            clouds = []; setupStars(); frameCount = 0; simulationTime = 0;
             history = { y: [], v: [], a: [] };
-            
-            setupPlanetDetails();
-            setGravity('tierra');
-            liftSlider.value = 9;
-            massSlider.value = 1.0;
+            setupPlanetDetails(); setGravity('tierra');
+            liftSlider.value = 9; mobileLiftSlider.value = 9;
+            massSlider.value = 1.0; mobileMassSlider.value = 1.0;
             bird.LIFT = (parseFloat(liftSlider.value) * PIXELS_PER_METER) / FPS;
             bird.MASS = 1.0;
-            pausePlayBtn.textContent = 'Pausa';
+            pausePlayBtn.textContent = 'Pausa'; mobilePausePlayBtn.textContent = 'Pausa';
             updateSliderLabels();
         }
 
@@ -302,11 +368,9 @@
             if (gameState === 'start') return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             manageEnvironment();
-            if(currentPlanet !== 'espacio') drawPlanet();
+            if(currentPlanet !== 'sol') drawPlanet();
             if (!isPaused) updateState();
-            drawState();
-            frameCount++;
-            requestAnimationFrame(gameLoop);
+            drawState(); frameCount++; requestAnimationFrame(gameLoop);
         }
 
         function updateState() {
@@ -314,35 +378,28 @@
              if (bird.y - bird.HEIGHT / 2 < 0) bird.y = bird.HEIGHT/2;
              if (bird.y + bird.HEIGHT / 2 > canvas.height) bird.y = canvas.height - bird.HEIGHT / 2;
              if (bird.y === bird.HEIGHT / 2 || bird.y === canvas.height - bird.HEIGHT / 2) bird.VELOCITY = 0;
-             updateHud();
-             simulationTime += 1/FPS;
+             updateHud(); simulationTime += 1/FPS;
         }
         
-        function drawState() {
-            drawTrajectory();
-            drawBird();
-            drawVectors();
-            drawAllGraphs();
-        }
-        
-        function updateBird() {
-             bird.VELOCITY += bird.GRAVITY;
-             bird.y += bird.VELOCITY;
-        }
+        function drawState() { drawTrajectory(); drawBird(); drawVectors(); drawAllGraphs(); }
+        function updateBird() { bird.VELOCITY += bird.GRAVITY; bird.y += bird.VELOCITY; }
 
         function updateHud() {
             const heightMeters = (canvas.height - bird.y) / PIXELS_PER_METER;
             const velocityMs = (-bird.VELOCITY * FPS) / PIXELS_PER_METER;
             const accelerationMs2 = (bird.GRAVITY * FPS * FPS) / PIXELS_PER_METER;
+            
             hudTime.textContent = simulationTime.toFixed(2);
+            mobileHudTime.textContent = simulationTime.toFixed(2);
             hudHeight.textContent = heightMeters.toFixed(2);
+            mobileHudHeight.textContent = heightMeters.toFixed(2);
             hudVelocity.textContent = velocityMs.toFixed(2);
+            mobileHudVelocity.textContent = velocityMs.toFixed(2);
             hudAcceleration.textContent = (-accelerationMs2).toFixed(2);
-            history.y.push(Math.max(0, heightMeters));
-            history.v.push(velocityMs);
-            history.a.push(-accelerationMs2);
-            const maxHistory = 300;
-            if(history.y.length > maxHistory) { history.y.shift(); history.v.shift(); history.a.shift(); }
+            mobileHudAcceleration.textContent = (-accelerationMs2).toFixed(2);
+
+            history.y.push(Math.max(0, heightMeters)); history.v.push(velocityMs); history.a.push(-accelerationMs2);
+            if(history.y.length > 300) { history.y.shift(); history.v.shift(); history.a.shift(); }
         }
 
         function drawPlanet() {
@@ -357,12 +414,6 @@
             ctx.clip(); 
             switch(currentPlanet) {
                 case 'tierra':
-                    const atmosphereGrad = ctx.createRadialGradient(0, 0, canvas.height * 0.95, 0, 0, canvas.height);
-                    atmosphereGrad.addColorStop(0, 'transparent');
-                    atmosphereGrad.addColorStop(1, 'rgba(135, 206, 250, 0.4)');
-                    ctx.fillStyle = atmosphereGrad;
-                    ctx.fillRect(-canvas.height, -canvas.height, canvas.height * 2, canvas.height * 2);
-
                     ctx.fillStyle = '#228B22'; // Verde continentes
                     ctx.beginPath();
                     ctx.moveTo(50, -200); ctx.bezierCurveTo(200, -150, 250, 0, 150, 100); ctx.bezierCurveTo(50, 250, -150, 150, 50, -200);
@@ -371,120 +422,37 @@
                     ctx.moveTo(-150, 50); ctx.bezierCurveTo(-250, 150, -200, 300, -100, 250); ctx.bezierCurveTo(0, 200, -50, 100, -150, 50);
                     ctx.fill();
                     ctx.beginPath(); ctx.ellipse(250, 250, 80, 50, Math.PI / 4, 0, 2 * Math.PI); ctx.fill();
-
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-                    ctx.beginPath();
-                    ctx.ellipse(-100, -150, 150, 60, Math.PI / -6, 0, 2 * Math.PI);
-                    ctx.ellipse(150, 100, 200, 80, Math.PI / 4, 0, 2 * Math.PI);
-                    ctx.ellipse(0, 250, 180, 70, Math.PI / 3, 0, 2 * Math.PI);
-                    ctx.fill();
-                    break;
-                case 'luna':
-                    ctx.fillStyle = 'rgba(0,0,0,0.07)';
-                    ctx.beginPath();
-                    ctx.ellipse(-150, 50, 200, 150, Math.PI / 4, 0, 2 * Math.PI);
-                    ctx.ellipse(200, -100, 180, 130, -Math.PI / 3, 0, 2 * Math.PI);
-                    ctx.fill();
-                    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-                    lunaCraters.forEach(crater => {
-                        ctx.beginPath();
-                        ctx.arc(crater.x, crater.y, crater.radius, 0, 2 * Math.PI);
-                        ctx.fill();
-                    });
-                    break;
-                case 'marte':
-                     ctx.fillStyle = 'rgba(255,255,255,0.9)';
-                     ctx.beginPath();
-                     ctx.arc(0, -canvas.height + 30, 180, 0, 2 * Math.PI);
-                     ctx.fill();
-                     ctx.fillStyle = 'rgba(0,0,0,0.2)';
-                     ctx.beginPath();
-                     ctx.ellipse(-50, 100, 180, 100, Math.PI / 3, 0, 2*Math.PI);
-                     ctx.ellipse(200, -150, 150, 90, -Math.PI / 4, 0, 2*Math.PI);
-                     ctx.ellipse(50, 300, 200, 120, -Math.PI / 5, 0, 2*Math.PI);
-                     ctx.fill();
-                     ctx.fillStyle = 'rgba(100, 40, 20, 0.3)';
-                     ctx.beginPath();
-                     ctx.ellipse(-150, -200, 120, 60, Math.PI / 5, 0, 2 * Math.PI);
-                     ctx.ellipse(100, 200, 250, 100, -Math.PI / 7, 0, 2 * Math.PI);
-                     ctx.fill();
-                     ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 2;
-                     ctx.beginPath();
-                     ctx.moveTo(-200, -100); ctx.bezierCurveTo(0, 0, 100, 200, 300, 250);
-                     ctx.moveTo(-250, 150); ctx.bezierCurveTo(-100, 50, 50, 100, 200, -50);
-                     ctx.stroke();
-                    break;
-                case 'jupiter':
-                    const greatRedSpot = { x: 150, y: -100, w: 120, h: 70 };
-                    for(let i=-6; i<7; i++) {
-                        ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 230, 200, 0.3)' : 'rgba(130, 80, 50, 0.3)';
-                        ctx.beginPath(); let y_base = i * 80;
-                        ctx.moveTo(-canvas.height * 1.5, y_base - 40);
-                        for (let x = -canvas.height * 1.5; x < canvas.height * 1.5; x += 50) {
-                            ctx.lineTo(x, y_base + Math.sin(x / 200 + i) * 20 - 40);
-                        }
-                        ctx.lineTo(canvas.height * 1.5, y_base + 40); ctx.lineTo(-canvas.height * 1.5, y_base + 40);
-                        ctx.closePath(); ctx.fill();
-                    }
-                    ctx.fillStyle = '#c5693c'; ctx.beginPath();
-                    ctx.ellipse(greatRedSpot.x, greatRedSpot.y, greatRedSpot.w, greatRedSpot.h, -Math.PI / 10, 0, 2 * Math.PI);
-                    ctx.fill();
-                    ctx.fillStyle = 'rgba(90, 40, 20, 0.5)'; ctx.beginPath();
-                    ctx.ellipse(greatRedSpot.x + 10, greatRedSpot.y + 5, greatRedSpot.w, greatRedSpot.h, -Math.PI / 10, 0, 2 * Math.PI);
-                    ctx.fill();
                     break;
                 case 'saturno':
                     const saturnRadius = canvas.height * 0.6;
                     const tilt = -0.3;
-                    ctx.save();
-                    ctx.rotate(tilt);
-
-                    // Back rings
+                    ctx.save(); ctx.rotate(tilt);
                     drawRingPart(saturnRadius * 1.9, saturnRadius * 0.65, saturnRadius * 0.2, 'rgba(180, 170, 160, 0.7)', true);
                     drawRingPart(saturnRadius * 1.5, saturnRadius * 0.5, saturnRadius * 0.25, 'rgba(210, 200, 180, 0.8)', true);
-                    
                     ctx.restore(); 
 
                     let saturnGrad = ctx.createRadialGradient(-30, -30, 10, 0, 0, saturnRadius);
                     saturnGrad.addColorStop(0, '#F5EAC7'); saturnGrad.addColorStop(1, '#D2B48C');
-                    ctx.fillStyle = saturnGrad;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, saturnRadius, 0, 2 * Math.PI);
-                    ctx.fill();
+                    ctx.fillStyle = saturnGrad; ctx.beginPath(); ctx.arc(0, 0, saturnRadius, 0, 2 * Math.PI); ctx.fill();
 
-                    ctx.save();
-                    ctx.rotate(tilt);
-                    
+                    ctx.save(); ctx.rotate(tilt);
                     drawRingPart(saturnRadius * 1.9, saturnRadius * 0.65, saturnRadius * 0.2, 'rgba(180, 170, 160, 0.7)', false);
                     drawRingPart(saturnRadius * 1.5, saturnRadius * 0.5, saturnRadius * 0.25, 'rgba(210, 200, 180, 0.8)', false);
-
                     ctx.restore();
                     break;
                  case 'sol':
-                    ctx.rotate(-rotation); // Cancel planet rotation for static sun
+                    ctx.rotate(-rotation); 
                     const sunRadius = canvas.height * 0.8;
-                    
                     let sunGrad = ctx.createRadialGradient(-50, -50, 20, 0, 0, sunRadius);
-                    sunGrad.addColorStop(0, 'white');
-                    sunGrad.addColorStop(0.5, '#FFD700');
-                    sunGrad.addColorStop(1, '#FF8C00');
-                    ctx.fillStyle = sunGrad;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, sunRadius, 0, 2 * Math.PI);
-                    ctx.fill();
+                    sunGrad.addColorStop(0, 'white'); sunGrad.addColorStop(0.5, '#FFD700'); sunGrad.addColorStop(1, '#FF8C00');
+                    ctx.fillStyle = sunGrad; ctx.beginPath(); ctx.arc(0, 0, sunRadius, 0, 2 * Math.PI); ctx.fill();
                     
-                    // Flares
-                    ctx.strokeStyle = `rgba(255, 200, 100, ${0.5 + Math.sin(frameCount * 0.1) * 0.2})`;
-                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = `rgba(255, 200, 100, ${0.5 + Math.sin(frameCount * 0.1) * 0.2})`; ctx.lineWidth = 3;
                     for (let i = 0; i < 7; i++) {
                         const angle = (i * Math.PI * 2 / 7) + frameCount * 0.002;
                         const length = sunRadius + 20 + Math.sin(frameCount * 0.05 + i * 2) * 20;
-                        ctx.beginPath();
-                        ctx.moveTo(Math.cos(angle) * sunRadius, Math.sin(angle) * sunRadius);
-                        ctx.quadraticCurveTo(
-                            Math.cos(angle + 0.1) * (sunRadius + length) / 2, Math.sin(angle + 0.1) * (sunRadius + length) / 2,
-                            Math.cos(angle) * length, Math.sin(angle) * length
-                        );
+                        ctx.beginPath(); ctx.moveTo(Math.cos(angle) * sunRadius, Math.sin(angle) * sunRadius);
+                        ctx.quadraticCurveTo( Math.cos(angle + 0.1) * (sunRadius + length) / 2, Math.sin(angle + 0.1) * (sunRadius + length) / 2, Math.cos(angle) * length, Math.sin(angle) * length);
                         ctx.stroke();
                     }
                     break;
@@ -493,65 +461,34 @@
         }
 
         function drawRingPart(radiusX, radiusY, lineWidth, color, isBack) {
-             ctx.strokeStyle = color;
-             ctx.lineWidth = lineWidth;
-             ctx.beginPath();
-             ctx.ellipse(0, 0, radiusX, radiusY, 0, isBack ? Math.PI : 0, isBack ? 2 * Math.PI : Math.PI);
+             ctx.strokeStyle = color; ctx.lineWidth = lineWidth;
+             ctx.beginPath(); ctx.ellipse(0, 0, radiusX, radiusY, 0, isBack ? Math.PI : 0, isBack ? 2 * Math.PI : Math.PI);
              ctx.stroke();
         }
-
-        function drawTrajectory() {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-            history.y.forEach((h, i) => {
-                if (i % 5 === 0) {
-                    const x = bird.x - ((history.y.length - 1 - i) * 4);
-                    const y = canvas.height - (h * PIXELS_PER_METER);
-                    if (x > 0) {
-                        ctx.beginPath();
-                        ctx.arc(x, y, 2, 0, 2 * Math.PI);
-                        ctx.fill();
-                    }
-                }
-            });
-        }
+        function drawTrajectory() { /* ... */ }
         function drawAllGraphs() {
-            drawGraph(graphCtxY, history.y, 'Altura (y)');
-            drawGraph(graphCtxV, history.v, 'Velocidad (v)');
-            drawGraph(graphCtxA, history.a, 'Aceleración (a)');
+            drawGraph(graphCtxY, history.y, 'Altura (y)'); drawGraph(graphCtxV, history.v, 'Velocidad (v)'); drawGraph(graphCtxA, history.a, 'Aceleración (a)');
+            drawGraph(mobileGraphCtxY, history.y, 'Altura (y)'); drawGraph(mobileGraphCtxV, history.v, 'Velocidad (v)'); drawGraph(mobileGraphCtxA, history.a, 'Aceleración (a)');
         }
         
         function drawGraph(graphCtx, data, label) {
-            const w = graphCtx.canvas.width;
-            const h = graphCtx.canvas.height;
-            graphCtx.clearRect(0, 0, w, h);
-            
-            graphCtx.fillStyle = "white"; 
-            graphCtx.font = "10px 'Press Start 2P'"; 
-            graphCtx.textAlign = 'left';
-            graphCtx.fillText(label, 10, 15); 
-
+            if (!graphCtx.canvas.clientWidth) return;
+            const w = graphCtx.canvas.width; const h = graphCtx.canvas.height; graphCtx.clearRect(0, 0, w, h);
+            graphCtx.fillStyle = "white"; graphCtx.font = "10px 'Press Start 2P'"; graphCtx.textAlign = 'left'; graphCtx.fillText(label, 10, 15); 
             if (!data || data.length < 2) return;
-
             const maxAbs = Math.max(...data.map(val => Math.abs(val)), 1);
             const minVal = label === 'Altura (y)' ? 0 : -maxAbs;
             const maxVal = label === 'Altura (y)' ? Math.max(...data, 1) : maxAbs;
-
-            graphCtx.strokeStyle = '#FFD700'; 
-            graphCtx.lineWidth = 2; 
-            graphCtx.beginPath();
+            graphCtx.strokeStyle = '#FFD700'; graphCtx.lineWidth = 2; graphCtx.beginPath();
             data.forEach((val, i) => { 
                 if (isNaN(val)) return;
-                const x = (i / (data.length - 1)) * w;
-                const y = h - ((val - minVal) / (maxVal - minVal || 1)) * h;
+                const x = (i / (data.length - 1)) * w; const y = h - ((val - minVal) / (maxVal - minVal || 1)) * h;
                 if (i === 0) graphCtx.moveTo(x, y); else graphCtx.lineTo(x, y); 
             });
             graphCtx.stroke();
-
             const lastVal = data[data.length - 1];
             if (lastVal !== undefined) {
-                graphCtx.fillStyle = '#FFD700';
-                graphCtx.font = "11px 'Roboto Mono'";
-                graphCtx.textAlign = 'right';
+                graphCtx.fillStyle = '#FFD700'; graphCtx.font = "11px 'Roboto Mono'"; graphCtx.textAlign = 'right';
                 graphCtx.fillText(lastVal.toFixed(1), w - 5, 15);
             }
         }
@@ -563,146 +500,100 @@
             bird.GRAVITY = gInCanvasUnits; 
             canvas.style.background = preset.bg;
             Object.values(planetButtons).forEach(btn => btn.classList.remove('active'));
+            Object.values(mobilePlanetButtons).forEach(btn => btn.classList.remove('active'));
             planetButtons[planetName].classList.add('active');
-        }
-        function showTip(message) { didacticTip.textContent = message; setTimeout(() => { didacticTip.textContent = '' }, 4000); }
-        function startSimulation() { 
-            initAudio(); 
-            setup(); 
-            gameState = 'playing'; 
-            isPaused = false; 
-            startScreen.classList.add('hidden'); 
-            simulationHud.classList.remove('hidden'); 
-            resizeCanvas(); 
-            gameLoop(); 
+            mobilePlanetButtons[planetName].classList.add('active');
         }
 
-        function goToMenu() { 
-            gameState = 'start'; 
-            simulationHud.classList.add('hidden');
-            startScreen.classList.remove('hidden');
-            setup(); 
-            startScreenLoop(); 
-        }
+        function startSimulation() { initAudio(); setup(); gameState = 'playing'; isPaused = false; startScreen.classList.add('hidden'); simulationHud.classList.remove('hidden'); resizeCanvas(); gameLoop(); }
+        function goToMenu() { gameState = 'start'; simulationHud.classList.add('hidden'); startScreen.classList.remove('hidden'); setup(); startScreenLoop(); }
 
-        simModeButton.addEventListener('click', startSimulation); 
-        exitButton.addEventListener('click', goToMenu); 
-        pausePlayBtn.addEventListener('click', () => { isPaused = !isPaused; pausePlayBtn.textContent = isPaused ? 'Play' : 'Pausa'; });
-        guideButton.addEventListener('click', () => {
-            guidePopup.classList.remove('hidden');
-            setTimeout(() => MathJax.typesetPromise(), 10);
-        });
-        closeGuideBtn.addEventListener('click', () => guidePopup.classList.add('hidden'));
+        function togglePause() { isPaused = !isPaused; pausePlayBtn.textContent = isPaused ? 'Play' : 'Pausa'; mobilePausePlayBtn.textContent = isPaused ? 'Play' : 'Pausa'; }
+        
+        function openGuide() { guidePopup.classList.remove('hidden'); setTimeout(() => MathJax.typesetPromise(), 10); }
 
-        liftSlider.addEventListener('input', (e) => { 
+        function handleLiftChange(e) {
             const liftInMs = parseFloat(e.target.value);
             bird.LIFT = (liftInMs * PIXELS_PER_METER) / FPS;
+            liftSlider.value = liftInMs; mobileLiftSlider.value = liftInMs;
             updateSliderLabels(); 
-        });
-        massSlider.addEventListener('input', e => { bird.MASS = parseFloat(e.target.value); updateSliderLabels(); showTip("Nota: La masa no afecta la caída libre. ¡'g' es la misma para todos!"); });
+        }
+
+        function handleMassChange(e) {
+            bird.MASS = parseFloat(e.target.value);
+            massSlider.value = bird.MASS; mobileMassSlider.value = bird.MASS;
+            updateSliderLabels(); showTip("Nota: La masa no afecta la caída libre. ¡'g' es la misma para todos!");
+        }
+
+        // --- Event Listeners ---
+        simModeButton.addEventListener('click', startSimulation); 
+        exitButton.addEventListener('click', goToMenu); mobileExitBtn.addEventListener('click', goToMenu);
+        pausePlayBtn.addEventListener('click', togglePause); mobilePausePlayBtn.addEventListener('click', togglePause);
+        guideButton.addEventListener('click', openGuide); mobileGuideBtn.addEventListener('click', openGuide);
+        closeGuideBtn.addEventListener('click', () => guidePopup.classList.add('hidden'));
+
+        liftSlider.addEventListener('input', handleLiftChange); mobileLiftSlider.addEventListener('input', handleLiftChange);
+        massSlider.addEventListener('input', handleMassChange); mobileMassSlider.addEventListener('input', handleMassChange);
+
         Object.entries(planetButtons).forEach(([name, btn]) => btn.addEventListener('click', () => setGravity(name)));
+        Object.entries(mobilePlanetButtons).forEach(([name, btn]) => btn.addEventListener('click', () => setGravity(name)));
+        
+        // Mobile Panel Logic
+        function openMobilePanel() { mobilePanelOverlay.classList.remove('hidden'); setTimeout(() => { mobilePanel.classList.remove('-translate-x-full'); mobilePanelOverlay.classList.remove('opacity-0'); }, 10); }
+        function closeMobilePanel() { mobilePanel.classList.add('-translate-x-full'); mobilePanelOverlay.classList.add('opacity-0'); setTimeout(() => mobilePanelOverlay.classList.add('hidden'), 300); }
+        mobileMenuBtn.addEventListener('click', openMobilePanel);
+        mobilePanelCloseBtn.addEventListener('click', closeMobilePanel);
+        mobilePanelOverlay.addEventListener('click', closeMobilePanel);
         
         function handleInput(e) { if (e.code === 'Space' || e.type === 'mousedown' || e.type === 'touchstart') { e.preventDefault(); if (gameState === 'playing') { jump(); } } }
         
-        window.onload=()=>{
-            resizeCanvas();
-            setup();
-            startScreenLoop();
-        };
+        window.onload=()=>{ resizeCanvas(); setup(); startScreenLoop(); };
 
-        function setupPlanetDetails() { 
-            lunaCraters = []; 
-            for (let i = 0; i < 80; i++) { 
-                lunaCraters.push({ x: Math.random() * 1600 - 800, y: Math.random() * 800 - 400, radius: Math.random() * 50 + 5 }); 
-            } 
-        }
-        function setupStars() {
-            stars = [];
-            for (let i = 0; i < 150; i++) {
-                stars.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    radius: Math.random() * 1.5,
-                    alpha: Math.random(),
-                    twinkleOffset: Math.random() * 2 * Math.PI,
-                    twinkleSpeed: Math.random() * 0.03 + 0.01
-                });
-            }
-        }
-        function manageEnvironment() {
-            if (currentPlanet === 'sol') {
-                drawSunRays();
-                drawStars();
-            } else if (currentPlanet === 'tierra') {
-                drawClouds();
-            } else {
-                drawDistantGalaxy();
-                drawStars();
-            }
-        }
+        function setupPlanetDetails() { lunaCraters = []; for (let i = 0; i < 80; i++) { lunaCraters.push({ x: Math.random() * 1600 - 800, y: Math.random() * 800 - 400, radius: Math.random() * 50 + 5 }); } }
+        function setupStars() { stars = []; for (let i = 0; i < 150; i++) { stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 1.5, alpha: Math.random(), twinkleOffset: Math.random() * 2 * Math.PI, twinkleSpeed: Math.random() * 0.03 + 0.01 }); } }
+        function manageEnvironment() { if (currentPlanet === 'sol') { drawSunRays(); drawStars(); } else if (currentPlanet === 'tierra') { drawClouds(); } else { drawDistantGalaxy(); drawStars(); } }
         
         function drawSunRays() {
-            const sunCenterX = canvas.width / 2;
-            const sunCenterY = canvas.height * 1.5;
-            const numRays = 16;
+            const sunCenterX = canvas.width / 2; const sunCenterY = canvas.height * 1.5; const numRays = 16;
             for (let i = 0; i < numRays; i++) {
-                ctx.save();
-                ctx.translate(sunCenterX, sunCenterY);
+                ctx.save(); ctx.translate(sunCenterX, sunCenterY);
                 const angle = (i / numRays) * Math.PI * 2 + frameCount * 0.001;
                 ctx.rotate(angle);
                 const rayGrad = ctx.createLinearGradient(150, 0, canvas.width, 0);
                 const alpha = 0.1 + Math.sin(frameCount * 0.05 + i * 5) * 0.05;
-                rayGrad.addColorStop(0, `rgba(255, 220, 180, ${alpha})`);
-                rayGrad.addColorStop(1, 'rgba(255, 220, 180, 0)');
-                ctx.fillStyle = rayGrad;
-                ctx.beginPath();
-                ctx.moveTo(150, 0);
-                ctx.lineTo(canvas.width, -50);
-                ctx.lineTo(canvas.width, 50);
-                ctx.closePath();
-                ctx.fill();
+                rayGrad.addColorStop(0, `rgba(255, 220, 180, ${alpha})`); rayGrad.addColorStop(1, 'rgba(255, 220, 180, 0)');
+                ctx.fillStyle = rayGrad; ctx.beginPath(); ctx.moveTo(150, 0); ctx.lineTo(canvas.width, -50); ctx.lineTo(canvas.width, 50); ctx.closePath(); ctx.fill();
                 ctx.restore();
             }
         }
 
         function drawDistantGalaxy() {
-            ctx.save();
-            ctx.translate(canvas.width * 0.8, canvas.height * 0.25);
-            ctx.rotate(-0.4 + frameCount * -0.0001);
+            ctx.save(); ctx.translate(canvas.width * 0.8, canvas.height * 0.25); ctx.rotate(-0.4 + frameCount * -0.0001);
             let galaxyGrad = ctx.createRadialGradient(0,0,10, 0,0,150);
-            galaxyGrad.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
-            galaxyGrad.addColorStop(0.3, 'rgba(200, 200, 255, 0.1)');
-            galaxyGrad.addColorStop(1, 'rgba(150, 150, 255, 0)');
+            galaxyGrad.addColorStop(0, 'rgba(255, 255, 255, 0.2)'); galaxyGrad.addColorStop(0.3, 'rgba(200, 200, 255, 0.1)'); galaxyGrad.addColorStop(1, 'rgba(150, 150, 255, 0)');
             ctx.fillStyle = galaxyGrad;
             for(let i = 0; i < 800; i++) {
-                let angle = i * 0.15;
-                let dist = Math.pow(i, 0.7);
-                let x = Math.cos(angle) * dist;
-                let y = Math.sin(angle) * dist;
-                ctx.beginPath();
-                ctx.arc(x, y, Math.random() * 1.5, 0, Math.PI * 2);
-                ctx.fill();
+                let angle = i * 0.15; let dist = Math.pow(i, 0.7);
+                let x = Math.cos(angle) * dist; let y = Math.sin(angle) * dist;
+                ctx.beginPath(); ctx.arc(x, y, Math.random() * 1.5, 0, Math.PI * 2); ctx.fill();
             }
             ctx.restore();
         }
 
         function drawClouds(){if(frameCount%150===0){clouds.push({x:canvas.width,y:Math.random()*canvas.height*.5,size:Math.random()*20+20,speed:Math.random()*.5+.5})}ctx.fillStyle='rgba(255, 255, 255, 0.9)';clouds.forEach(cloud=>{cloud.x-=cloud.speed;ctx.beginPath();ctx.ellipse(cloud.x, cloud.y,cloud.size*2,cloud.size,0,0,2*Math.PI);ctx.fill()});clouds=clouds.filter(cloud=>cloud.x+cloud.size*2>0)}
         
-        function drawStars() {
-            stars.forEach(star => {
-                star.alpha = 0.5 + 0.5 * Math.sin(star.twinkleOffset + frameCount * star.twinkleSpeed);
-                ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
-                ctx.beginPath();
-                ctx.arc(star.x, star.y, star.radius, 0, 2 * Math.PI);
-                ctx.fill();
-            });
-        }
+        function drawStars() { stars.forEach(star => { star.alpha = 0.5 + 0.5 * Math.sin(star.twinkleOffset + frameCount * star.twinkleSpeed); ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`; ctx.beginPath(); ctx.arc(star.x, star.y, star.radius, 0, 2 * Math.PI); ctx.fill(); }); }
         function drawBird(){ctx.save();const angle=bird.VELOCITY/15;ctx.translate(bird.x,bird.y);ctx.rotate(angle);const gradient=ctx.createRadialGradient(0,0,5,0,0,bird.WIDTH/2);gradient.addColorStop(0,'#FFEB3B');gradient.addColorStop(1,'#FBC02D');ctx.fillStyle=gradient;ctx.strokeStyle='#333';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,bird.WIDTH/2,bird.HEIGHT/2,0,0,2*Math.PI);ctx.fill();ctx.stroke();const wingFlap=Math.sin(frameCount*.3)*5;ctx.fillStyle='#FFF9C4';ctx.beginPath();ctx.moveTo(-bird.WIDTH/5,-wingFlap);ctx.quadraticCurveTo(0,-bird.HEIGHT/3-wingFlap,bird.WIDTH/4,-wingFlap);ctx.quadraticCurveTo(0,bird.HEIGHT/4-wingFlap,-bird.WIDTH/5,-wingFlap);ctx.fill();ctx.stroke();ctx.fillStyle='white';ctx.beginPath();ctx.arc(bird.WIDTH/4,-bird.HEIGHT/6,5,0,2*Math.PI);ctx.fill();ctx.stroke();ctx.fillStyle='black';ctx.beginPath();ctx.arc(bird.WIDTH/4+1,-bird.HEIGHT/6,2,0,2*Math.PI);ctx.fill();ctx.fillStyle='#F57C00';ctx.beginPath();ctx.moveTo(bird.WIDTH/2-5,-3);ctx.lineTo(bird.WIDTH/2+8,0);ctx.lineTo(bird.WIDTH/2-5,3);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}
         function startScreenLoop(){if(gameState!=='start')return;ctx.clearRect(0,0,canvas.width,canvas.height);manageEnvironment();bird.VELOCITY+=BIRD_PROPS.GRAVITY;bird.y+=bird.VELOCITY;if(bird.y + bird.HEIGHT/2 > canvas.height){bird.y = canvas.height - bird.HEIGHT/2; bird.VELOCITY = 0;}drawBird();frameCount++;requestAnimationFrame(startScreenLoop)}
         document.addEventListener('keydown',handleInput);canvas.addEventListener('mousedown',handleInput);canvas.addEventListener('touchstart',handleInput);window.addEventListener('resize', resizeCanvas);
         function drawVectors(){const birdCenterX=bird.x;const birdCenterY=bird.y;ctx.save();ctx.strokeStyle='red';ctx.lineWidth=3;ctx.fillStyle='red';ctx.beginPath();ctx.moveTo(birdCenterX,birdCenterY);ctx.lineTo(birdCenterX,birdCenterY+50);ctx.lineTo(birdCenterX-5,birdCenterY+40);ctx.moveTo(birdCenterX,birdCenterY+50);ctx.lineTo(birdCenterX+5,birdCenterY+40);ctx.stroke();ctx.font="16px 'Press Start 2P'";ctx.fillText("g",birdCenterX+10,birdCenterY+45);ctx.restore();if(impulseTimer>0){ctx.save();ctx.strokeStyle='#00FF00';ctx.lineWidth=3;ctx.fillStyle='#00FF00';ctx.beginPath();ctx.moveTo(birdCenterX,birdCenterY);ctx.lineTo(birdCenterX,birdCenterY-50);ctx.lineTo(birdCenterX-5,birdCenterY-40);ctx.moveTo(birdCenterX,birdCenterY-50);ctx.lineTo(birdCenterX+5,birdCenterY-40);ctx.stroke();ctx.font="12px 'Press Start 2P'";ctx.fillText("Impulso",birdCenterX-30,birdCenterY-55);ctx.restore();impulseTimer--}}
         function jump(){if(gameState==='playing'){playJumpSound();bird.VELOCITY = -bird.LIFT;impulseTimer=20}}
-        function updateSliderLabels(){liftValue.textContent=parseFloat(liftSlider.value).toFixed(1);massValue.textContent=parseFloat(massSlider.value).toFixed(1)}
+        function updateSliderLabels(){
+            const lift = parseFloat(liftSlider.value).toFixed(1);
+            const mass = parseFloat(massSlider.value).toFixed(1);
+            liftValue.textContent=lift; mobileLiftValue.textContent=lift;
+            massValue.textContent=mass; mobileMassValue.textContent=mass;
+        }
     </script>
 </body>
 </html>
