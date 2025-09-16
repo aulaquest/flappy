@@ -363,7 +363,7 @@
         let history = { y: [], v: [], a: [] };
         let audioCtx;
         let lunaCraters = [];
-        let pipes = [], coins = [], score = 0, coinCount = 0, gameFrame = 0, pipeSpeed = 3, attemptCount = 0;
+        let pipes = [], coins = [], score = 0, coinCount = 0, gameFrame = 0, basePipeSpeed = 3, attemptCount = 0;
         let isMobile = false;
         
         // --- Constantes Físicas ---
@@ -540,7 +540,8 @@
             setupStars();
             frameCount = 0; gameFrame = 0;
             history = { y: [], v: [], a: [] };
-            pipes = []; coins = []; score = 0; coinCount = 0; pipeSpeed = isMobile ? 2.5 : 3;
+            pipes = []; coins = []; score = 0; coinCount = 0; 
+            basePipeSpeed = isMobile ? 2.5 : 3;
             
             if (mode === 'simulation') {
                 bird.x = canvas.width / 2.5;
@@ -557,6 +558,11 @@
                 canvas.style.background = GAME_BACKGROUNDS.day;
                  currentGameBackground = GAME_BACKGROUNDS.day;
                  gameContainer.classList.toggle('game-mode-mobile', isMobile);
+                 // Simulación de "Zoom out" en móvil ajustando parámetros
+                 if (isMobile) {
+                    bird.WIDTH = 38;
+                    bird.HEIGHT = 28;
+                 }
             }
         }
 
@@ -614,47 +620,73 @@
                 endGame();
             }
 
-            // Pipes
-            if (gameFrame % 120 === 0) {
-                const gapY = Math.random() * (canvas.height - 400) + 200;
-                const pipeWidth = isMobile ? 60 : 80;
-                const pipeGap = isMobile ? 240 : 200; // Aumento de gap para móvil
-                pipes.push({ x: canvas.width, y: gapY, width: pipeWidth, gap: pipeGap, scored: false });
+            // --- Velocidad de tuberías ---
+            let currentPipeSpeed = basePipeSpeed;
+            if (score > 300) {
+                 const pointsOver300 = score - 300;
+                 const increments = Math.floor(pointsOver300 / 50);
+                 const percentageIncrease = Math.min(20, increments); // Máximo 20%
+                 currentPipeSpeed *= (1 + percentageIncrease / 100);
+            }
 
-                if (Math.random() > 0.5) { // 50% chance to spawn a coin
+            // --- Generación y actualización de tuberías ---
+            if (gameFrame % (isMobile ? 90 : 120) === 0) {
+                const gapY = Math.random() * (canvas.height - 350) + 175;
+                const pipeWidth = isMobile ? 50 : 80;
+                const pipeGap = isMobile ? 220 : 200; 
+                
+                const newPipe = { 
+                    x: canvas.width, 
+                    y: gapY, 
+                    width: pipeWidth, 
+                    gap: pipeGap, 
+                    scored: false 
+                };
+
+                // Añadir tuberías pulsantes
+                if (score >= 150 && Math.random() < 0.4) { // 40% de probabilidad
+                    newPipe.pulsating = true;
+                    newPipe.pulseSpeed = (Math.random() * 0.02) + 0.03;
+                    newPipe.pulseOffset = Math.random() * Math.PI * 2;
+                    newPipe.baseGap = pipeGap;
+                }
+                pipes.push(newPipe);
+
+                if (Math.random() > 0.5) {
                     coins.push({ x: canvas.width + pipeWidth / 2, y: gapY, radius: 15, collected: false });
                 }
             }
             
             pipes.forEach(pipe => {
-                pipe.x -= pipeSpeed;
+                pipe.x -= currentPipeSpeed;
+
+                if (pipe.pulsating) {
+                    pipe.gap = pipe.baseGap - Math.sin(gameFrame * pipe.pulseSpeed + pipe.pulseOffset) * (isMobile ? 30 : 40);
+                }
+
                 if (pipe.x + pipe.width < 0) pipes.shift();
                 
-                // Collision
                 if (bird.x + bird.WIDTH / 2 > pipe.x && bird.x - bird.WIDTH / 2 < pipe.x + pipe.width) {
                     if (bird.y - bird.HEIGHT / 2 < pipe.y - pipe.gap / 2 || bird.y + bird.HEIGHT / 2 > pipe.y + pipe.gap / 2) {
                         endGame();
                     }
                 }
 
-                // Score
                 if (!pipe.scored && pipe.x + pipe.width < bird.x) {
                     score++;
                     pipe.scored = true;
-                    // No sound for points, only for coins
-                    if (score > 0 && score % 5 === 0) pipeSpeed += 0.15; // Increase difficulty
                 }
             });
 
             // Coins
             coins.forEach((coin, index) => {
-                coin.x -= pipeSpeed;
+                coin.x -= currentPipeSpeed;
                 if (coin.x + coin.radius < 0) coins.splice(index, 1);
                 
                 const dist = Math.hypot(bird.x - coin.x, bird.y - coin.y);
                 if (dist < bird.WIDTH/2 + coin.radius) {
                     coinCount++;
-                    score += 5; // Extra points for coin
+                    score += 5;
                     playCoinSound();
                     coins.splice(index, 1);
                 }
@@ -694,17 +726,6 @@
                 ctx.fillStyle = 'rgba(255,255,255,0.2)';
                 ctx.fillRect(pipe.x, pipe.y - pipe.gap / 2 - capHeight, 5, capHeight);
                 ctx.fillRect(pipe.x, pipe.y + pipe.gap / 2, 5, capHeight);
-                ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                 for(let i = 0; i < 5; i++) {
-                    let yLineTop = Math.random() * (pipe.y - pipe.gap / 2);
-                    ctx.moveTo(pipe.x, yLineTop); ctx.lineTo(pipe.x + pipe.width, yLineTop);
-                    let yLineBottom = pipe.y + pipe.gap / 2 + Math.random() * (canvas.height - (pipe.y + pipe.gap/2));
-                    ctx.moveTo(pipe.x, yLineBottom); ctx.lineTo(pipe.x + pipe.width, yLineBottom);
-                 }
-                ctx.stroke();
-
             });
         }
         function drawCoins() {
@@ -1062,3 +1083,4 @@
     </script>
 </body>
 </html>
+
