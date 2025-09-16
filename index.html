@@ -15,6 +15,7 @@
         body {
             font-family: 'Roboto Mono', monospace;
             overflow: hidden;
+            background-color: #000; /* Fondo negro para evitar bordes blancos */
         }
         .font-game {
              font-family: 'Press Start 2P', cursive;
@@ -277,8 +278,8 @@
                     </div>
                 </div>
             </div>
-
         </div>
+        <a id="creditLink" href="https://aulaquest.com" target="_blank" class="absolute bottom-2 right-2 text-white text-xs opacity-70 hover:opacity-100 transition-opacity z-30 font-game" style="text-shadow: 1px 1px 2px black;">creado por aulaquest</a>
     </div>
 
     <script>
@@ -530,7 +531,7 @@
         function drawVectors(){const birdCenterX=bird.x;const birdCenterY=bird.y;ctx.save();ctx.strokeStyle='red';ctx.lineWidth=3;ctx.fillStyle='red';ctx.beginPath();ctx.moveTo(birdCenterX,birdCenterY);ctx.lineTo(birdCenterX,birdCenterY+50);ctx.lineTo(birdCenterX-5,birdCenterY+40);ctx.moveTo(birdCenterX,birdCenterY+50);ctx.lineTo(birdCenterX+5,birdCenterY+40);ctx.stroke();ctx.font="16px 'Press Start 2P'";ctx.fillText("g",birdCenterX+10,birdCenterY+45);ctx.restore();if(impulseTimer>0){ctx.save();ctx.strokeStyle='#00FF00';ctx.lineWidth=3;ctx.fillStyle='#00FF00';ctx.beginPath();ctx.moveTo(birdCenterX,birdCenterY);ctx.lineTo(birdCenterX,birdCenterY-50);ctx.lineTo(birdCenterX-5,birdCenterY-40);ctx.moveTo(birdCenterX,birdCenterY-50);ctx.lineTo(birdCenterX+5,birdCenterY-40);ctx.stroke();ctx.font="12px 'Press Start 2P'";ctx.fillText("Impulso",birdCenterX-30,birdCenterY-55);ctx.restore();impulseTimer--}}
 
         function updateResponsiveSettings() {
-            isMobile = window.matchMedia("(max-width: 768px)").matches;
+            isMobile = window.matchMedia("(max-width: 768px)").matches || /Mobi|Android/i.test(navigator.userAgent);
             
             const birdScale = Math.max(0.5, canvas.height / 800);
             responsiveSettings.birdWidth = (isMobile ? 38 : 50) * birdScale;
@@ -1062,14 +1063,41 @@
             if(planetButtons[planetName]) planetButtons[planetName].classList.add('active');
             if(mobilePlanetButtons[planetName]) mobilePlanetButtons[planetName].classList.add('active');
         }
+
+        async function enterMobileExperience() {
+            try {
+                if (gameContainer.requestFullscreen) {
+                    await gameContainer.requestFullscreen();
+                } else if (gameContainer.webkitRequestFullscreen) { /* Safari */
+                    await gameContainer.webkitRequestFullscreen();
+                } else if (gameContainer.msRequestFullscreen) { /* IE11 */
+                    await gameContainer.msRequestFullscreen();
+                }
+            } catch (err) {
+                console.log(`Error al intentar activar el modo de pantalla completa: ${err.message}`);
+            }
+
+            try {
+                if (screen.orientation && screen.orientation.lock) {
+                   await screen.orientation.lock('landscape');
+                }
+            } catch (error) {
+                console.log("No se pudo bloquear la orientación de la pantalla:", error);
+            }
+        }
+
         function startSimulation() { 
             setup('simulation'); gameState = 'simulation'; isPaused = false; 
             startScreen.classList.add('hidden'); 
             simulationHud.classList.remove('hidden'); 
             resizeCanvas(); gameLoop(); 
         }
+        
         function startGame() {
             initAudio();
+            if(isMobile) {
+                enterMobileExperience();
+            }
             attemptCount++;
             setup('game'); gameState = 'game'; isPaused = false;
             startScreen.classList.add('hidden');
