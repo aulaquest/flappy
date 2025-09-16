@@ -88,6 +88,9 @@
         #mobilePanel {
              background-color: rgba(15, 23, 42, 0.75); /* More translucent */
         }
+        .share-button {
+            @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg shadow-md transition-transform transform hover:scale-105;
+        }
         
     </style>
 </head>
@@ -123,12 +126,27 @@
             <p class="text-3xl mb-2 font-game">Puntuación: <span id="finalScore">0</span></p>
             <p class="text-xl mb-4 font-game">Monedas: <span id="finalCoins">0</span></p>
             <p class="text-xl mb-8 font-game">Intentos: <span id="attemptCounter">0</span></p>
-            <button id="retryButton" class="menu-button font-game bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-bold py-4 px-8 rounded-lg text-2xl shadow-lg transform hover:scale-105 transition-transform duration-200 border-4 border-yellow-600">
-                Reintentar
-            </button>
-            <button id="exitToMenuButton" class="mt-4 menu-button font-game bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg text-lg shadow-lg transform hover:scale-105 transition-transform duration-200 border-4 border-red-700">
-                Salir al Menú
-            </button>
+            <div class="flex flex-col gap-4">
+                <button id="retryButton" class="menu-button font-game bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-bold py-4 px-8 rounded-lg text-2xl shadow-lg transform hover:scale-105 transition-transform duration-200 border-4 border-yellow-600">
+                    Reintentar
+                </button>
+                <button id="exitToMenuButton" class="menu-button font-game bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg text-lg shadow-lg transform hover:scale-105 transition-transform duration-200 border-4 border-red-700">
+                    Salir al Menú
+                </button>
+            </div>
+            <div class="mt-8">
+                <p class="font-game text-sm mb-3">Compartir</p>
+                <div class="flex gap-4">
+                     <a id="shareWhatsapp" href="#" target="_blank" class="share-button" style="background-color: #25D366;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.487 5.235 3.487 8.413 0 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.586-1.457l-6.354 1.654zm.789-21.216c-2.02 1.942-3.11 4.597-3.111 7.393.002 5.795 4.71 10.502 10.505 10.502 1.833 0 3.593-.464 5.12-1.318l.354-.216-1.127-4.102-1.428.783c-.509.282-1.159.435-1.82.434-3.109-.002-5.632-2.525-5.634-5.633.001-1.343.49-2.62 1.353-3.648l.245-.291.003-.002 2.895 5.011c.074.128.232.195.39.195.056 0 .113-.01.168-.033.235-.098.375-.33.336-.57l-1.09-3.957.149-.128c.55-.472 1.157-.848 1.81-1.111l4.032-1.096c.302-.082.457-.422.375-.724-.082-.303-.423-.457-.726-.375l-4.032 1.096c-.58.158-1.118.44-1.575.81l-.004.003-2.905-5.029c-.193-.335-.611-.431-.945-.238z"/></svg>
+                        WhatsApp
+                    </a>
+                    <a id="shareTelegram" href="#" target="_blank" class="share-button" style="background-color: #0088cc;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M9.78 18.65l.288-4.234 7.525-6.9-11.434 4.536-4.159-1.325.002-.001s1.91-5.954 21-7.842l-2.012 18.553-6.402-4.759-4.011 3.963z"/></svg>
+                        Telegram
+                    </a>
+                </div>
+            </div>
         </div>
 
 
@@ -203,18 +221,16 @@
                         <button id="mobileMenuBtn" class="font-bold text-2xl px-3 py-1 text-yellow-300">☰</button>
                         <div class="flex gap-2">
                              <button id="mobilePausePlayBtn" class="text-sm font-bold w-20 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg transition-all">Pausa</button>
-                             <button id="mobileExitBtn" class="text-sm font-bold w-20 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg transition-all">Salir</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Sliding Panel (Mobile) -->
                 <div id="mobilePanel" class="fixed top-0 left-0 h-full w-4/5 max-w-[300px] backdrop-blur-sm z-40 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out pointer-events-auto overflow-y-auto">
-                    <button id="mobilePanelCloseBtn" class="absolute top-3 right-3 text-3xl font-bold text-white/70 hover:text-white">&times;</button>
-                    
                     <div class="flex flex-col gap-6 text-white pt-8">
                         <div>
-                            <button id="mobileGuideBtn" class="text-base w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg transition-all">Ver Guía de Simulación</button>
+                             <button id="mobileExitPanelBtn" class="text-base w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-3 rounded-lg transition-all mb-4">Salir al Menú</button>
+                             <button id="mobileGuideBtn" class="text-base w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg transition-all">Ver Guía de Simulación</button>
                         </div>
                         <div>
                             <h3 class="text-base mb-2 text-yellow-300 font-bold">Datos de Vuelo</h3>
@@ -330,10 +346,9 @@
         // --- DOM Móvil ---
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const mobilePanel = document.getElementById('mobilePanel');
-        const mobilePanelCloseBtn = document.getElementById('mobilePanelCloseBtn');
         const mobilePanelOverlay = document.getElementById('mobilePanelOverlay');
         const mobilePausePlayBtn = document.getElementById('mobilePausePlayBtn');
-        const mobileExitBtn = document.getElementById('mobileExitBtn');
+        const mobileExitPanelBtn = document.getElementById('mobileExitPanelBtn');
         const mobileGuideBtn = document.getElementById('mobileGuideBtn');
         const mobileHudTime = document.getElementById('mobileHudTime');
         const mobileHudHeight = document.getElementById('mobileHudHeight');
@@ -345,7 +360,7 @@
         const mobileMassValue = document.getElementById('mobileMassValue');
         const mobilePlanetButtons = { 
             tierra: document.getElementById('mobileEarthBtn'), luna: document.getElementById('mobileMoonBtn'), marte: document.getElementById('mobileMarsBtn'),
-            jupiter: document.getElementById('mobileJupiterBtn'), saturno: document.getElementById('mobileSunBtn'), sol: document.getElementById('mobileSunBtn')
+            jupiter: document.getElementById('mobileJupiterBtn'), saturno: document.getElementById('mobileSaturnBtn'), sol: document.getElementById('mobileSunBtn')
         };
         const mobileGraphCanvasY = document.getElementById('mobileGraphY');
         const mobileGraphCanvasV = document.getElementById('mobileGraphV');
@@ -824,6 +839,13 @@
         function endGame() {
             playGameOverSound();
             gameState = 'gameOver';
+            
+            const shareText = encodeURIComponent(`¡He conseguido ${score} puntos en Flappy Physics! ¿Puedes superarme?`);
+            const shareUrl = encodeURIComponent(window.location.href);
+
+            document.getElementById('shareWhatsapp').href = `https://wa.me/?text=${shareText} ${shareUrl}`;
+            document.getElementById('shareTelegram').href = `https://t.me/share/url?url=${shareUrl}&text=${shareText}`;
+
             gameOverScreen.classList.remove('hidden');
             gameOverScreen.classList.add('flex');
             finalScore.textContent = score;
@@ -920,23 +942,53 @@
                         ctx.fill();
                      });
                     break;
+                case 'jupiter':
+                    const greatRedSpot = { x: 150, y: -100, w: 120, h: 70 };
+                    const jupiterColors = ['#c9a888', '#8a6c4c', '#e0d1b3', '#a38c6d'];
+                    for(let i=-6; i<7; i++) {
+                        ctx.fillStyle = jupiterColors[Math.abs(i) % jupiterColors.length] + '80'; // Add alpha
+                        ctx.beginPath(); 
+                        let y_base = i * (planetRadius / 8);
+                        let bandHeight = planetRadius / 8 + (Math.sin(i*0.5) * 10);
+                        ctx.moveTo(-planetRadius * 1.5, y_base);
+                        for (let x = -planetRadius * 1.5; x < planetRadius * 1.5; x += 50) {
+                            ctx.lineTo(x, y_base + Math.sin(x / 300 + i + frameCount * 0.005) * 15);
+                        }
+                        ctx.lineTo(planetRadius * 1.5, y_base + bandHeight); 
+                        ctx.lineTo(-planetRadius * 1.5, y_base + bandHeight);
+                        ctx.closePath(); 
+                        ctx.fill();
+                    }
+                    // Gran Mancha Roja
+                    ctx.save();
+                    ctx.translate(greatRedSpot.x, greatRedSpot.y);
+                    ctx.rotate(-0.1 + frameCount * 0.002);
+                    let spotGrad = ctx.createRadialGradient(0, 0, greatRedSpot.w * 0.2, 0, 0, greatRedSpot.w);
+                    spotGrad.addColorStop(0, '#d89c7c');
+                    spotGrad.addColorStop(1, '#a05c3c');
+                    ctx.fillStyle = spotGrad; 
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, greatRedSpot.w, greatRedSpot.h, 0, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.restore();
+                    break;
                 case 'saturno':
                     const saturnRadius = planetRadius * 0.55;
                     const tilt = -0.3;
                     ctx.save();
                     ctx.rotate(tilt);
 
+                    // Sombra del planeta sobre los anillos
+                    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, saturnRadius, saturnRadius * 0.4, 0, Math.PI, Math.PI*2);
+                    ctx.fill();
+
                     // Anillos traseros (más oscuros)
                     drawRingPart(saturnRadius * 2.1, saturnRadius * 0.7, saturnRadius * 0.1, 'rgba(180, 170, 160, 0.6)', true); // Anillo A
                     drawRingPart(saturnRadius * 1.7, saturnRadius * 0.55, saturnRadius * 0.2, 'rgba(210, 200, 180, 0.7)', true); // Anillo B
                     ctx.restore(); 
 
-                    // Sombra de los anillos en el planeta
-                    ctx.fillStyle = 'rgba(0,0,0,0.2)';
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, saturnRadius, saturnRadius * 0.4, 0, 0, 2 * Math.PI);
-                    ctx.fill();
-                    
                     // Planeta
                     let saturnGrad = ctx.createRadialGradient(-30, -30, 10, 0, 0, saturnRadius);
                     saturnGrad.addColorStop(0, '#F5EAC7'); saturnGrad.addColorStop(1, '#D2B48C');
@@ -1002,10 +1054,8 @@
                         ctx.stroke();
                     }
                     break;
-                case 'jupiter': // Se mantiene el de antes
-                case 'luna': // Se mantiene el de antes
+                case 'luna': 
                 default:
-                     // Fallback para otros planetas, si los hubiera
                     ctx.beginPath();
                     ctx.arc(0, 0, planetRadius, 0, 2 * Math.PI);
                     ctx.fillStyle = GRAVITY_PRESETS[currentPlanet].planetColor;
@@ -1144,7 +1194,8 @@
         retryButton.addEventListener('click', startGame);
         exitToMenuButton.addEventListener('click', goToMenu);
         gameBackToMenuBtn.addEventListener('click', goToMenu);
-        exitButton.addEventListener('click', goToMenu); mobileExitBtn.addEventListener('click', goToMenu);
+        exitButton.addEventListener('click', goToMenu); 
+        mobileExitPanelBtn.addEventListener('click', goToMenu);
         pausePlayBtn.addEventListener('click', togglePause); mobilePausePlayBtn.addEventListener('click', togglePause);
         guideButton.addEventListener('click', openGuide); mobileGuideBtn.addEventListener('click', openGuide);
         closeGuideBtn.addEventListener('click', () => guidePopup.classList.add('hidden'));
@@ -1159,7 +1210,6 @@
         function openMobilePanel() { mobilePanelOverlay.classList.remove('hidden'); setTimeout(() => { mobilePanel.classList.remove('-translate-x-full'); mobilePanelOverlay.classList.remove('opacity-0'); }, 10); }
         function closeMobilePanel() { mobilePanel.classList.add('-translate-x-full'); mobilePanelOverlay.classList.add('opacity-0'); setTimeout(() => mobilePanelOverlay.classList.add('hidden'), 300); }
         mobileMenuBtn.addEventListener('click', openMobilePanel);
-        mobilePanelCloseBtn.addEventListener('click', closeMobilePanel);
         mobilePanelOverlay.addEventListener('click', closeMobilePanel);
         
         window.onload=()=>{ resizeCanvas(); setup('simulation'); startScreenLoop(); };
