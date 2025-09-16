@@ -90,6 +90,7 @@
         }
         .share-button {
             @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg shadow-md transition-transform transform hover:scale-105 border-b-4 active:border-b-0 active:translate-y-1;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
         }
         
     </style>
@@ -195,7 +196,7 @@
                     
                     <div class="flex flex-col flex-grow min-h-0">
                          <h3 class="text-base mb-2 text-yellow-300 font-bold">Entorno Planetario</h3>
-                        <div class="grid grid-cols-3 gap-2 mb-2 text-[10px] md:text-xs">
+                        <div class="grid grid-cols-3 gap-2 mb-2 text-sm">
                             <button id="earthBtn" class="planet-button">Tierra</button>
                             <button id="moonBtn" class="planet-button">Luna</button>
                             <button id="marsBtn" class="planet-button">Marte</button>
@@ -565,9 +566,9 @@
             const baseGapPercentage = (isMobile && !isLandscape) ? 0.35 : (isMobile ? 0.45 : 0.28);
             responsiveSettings.pipeGap = Math.max(160, canvas.height * baseGapPercentage);
 
-            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(85 * (canvas.width / 400)) : Math.max(120, canvas.width / 6.5);
+            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(85 * (canvas.width / 400)) : 120;
 
-            responsiveSettings.pipeGapMargin = canvas.height * 0.15;
+            responsiveSettings.pipeGapMargin = canvas.height * 0.10; // Reducido para mayor dificultad
             responsiveSettings.pipeGapRange = canvas.height - responsiveSettings.pipeGap - (responsiveSettings.pipeGapMargin * 2);
         }
 
