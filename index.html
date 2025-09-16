@@ -365,6 +365,7 @@
         let lunaCraters = [];
         let pipes = [], coins = [], score = 0, coinCount = 0, gameFrame = 0, basePipeSpeed = 3, attemptCount = 0;
         let isMobile = false;
+        let isBoosted = false, boostTimer = 0;
         
         // --- Constantes Físicas ---
         const PIXELS_PER_METER = 20, FPS = 60;
@@ -376,7 +377,7 @@
             saturno: { g: 10.44, bg: 'linear-gradient(to top, #2c3e50 0%, #1a222f 100%)', planetColor: '#E3D8B8' },
             sol: { g: 45.0, bg: 'linear-gradient(to top, #111 0%, #000 100%)', planetColor: '#FFD700' }
         };
-        const BIRD_PROPS = { WIDTH: 50, HEIGHT: 40, LIFT: 9, VELOCITY: 0, MASS: 1.0 };
+        const BIRD_PROPS = { WIDTH: 50, HEIGHT: 40, LIFT: 9, VELOCITY: 0, MASS: 1.0, trail: [] };
         const GAME_BACKGROUNDS = {
             day: 'linear-gradient(to top, #87CEEB 0%, #4A90E2 100%)',
             night: 'linear-gradient(to top, #0c0e1a 0%, #2c3e50 100%)',
@@ -457,6 +458,19 @@
         function drawStars() { stars.forEach(star => { star.alpha = 0.5 + 0.5 * Math.sin(star.twinkleOffset + frameCount * star.twinkleSpeed); ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`; ctx.beginPath(); ctx.arc(star.x, star.y, star.radius, 0, 2 * Math.PI); ctx.fill(); }); }
         
         function drawBird() {
+            // Draw Trail if boosted
+            if(isBoosted && bird.trail.length > 0) {
+                ctx.save();
+                bird.trail.forEach((p, i) => {
+                    const alpha = (i / bird.trail.length) * 0.5;
+                    ctx.fillStyle = `rgba(255, 99, 71, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, (i / bird.trail.length) * (bird.WIDTH/3), 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.restore();
+            }
+
             ctx.save();
             const angle = Math.max(-Math.PI / 4, Math.min(Math.PI / 6, bird.VELOCITY / 15));
             ctx.translate(bird.x, bird.y);
@@ -535,13 +549,14 @@
         }
 
         function setup(mode) {
-            bird = { ...BIRD_PROPS, x: canvas.width / 2, y: canvas.height / 2 };
+            bird = { ...BIRD_PROPS, x: canvas.width / 2, y: canvas.height / 2, trail: [] };
             clouds = [];
             setupStars();
             frameCount = 0; gameFrame = 0;
             history = { y: [], v: [], a: [] };
             pipes = []; coins = []; score = 0; coinCount = 0; 
             basePipeSpeed = isMobile ? 2.5 : 3;
+            isBoosted = false; boostTimer = 0;
             
             if (mode === 'simulation') {
                 bird.x = canvas.width / 2.5;
@@ -620,6 +635,18 @@
                 endGame();
             }
 
+            // --- Boost Timer ---
+            if (isBoosted) {
+                boostTimer--;
+                bird.trail.push({x: bird.x, y: bird.y});
+                if(bird.trail.length > 10) bird.trail.shift();
+                if (boostTimer <= 0) {
+                    isBoosted = false;
+                    bird.trail = [];
+                }
+            }
+
+
             // --- Velocidad de tuberías ---
             let currentPipeSpeed = basePipeSpeed;
             if (score > 300) {
@@ -628,9 +655,12 @@
                  const percentageIncrease = Math.min(20, increments); // Máximo 20%
                  currentPipeSpeed *= (1 + percentageIncrease / 100);
             }
+            if (isBoosted) {
+                currentPipeSpeed *= 1.10;
+            }
 
             // --- Generación y actualización de tuberías ---
-            if (gameFrame % (isMobile ? 90 : 120) === 0) {
+            if (gameFrame % (isMobile ? 110 : 120) === 0) {
                 const gapY = Math.random() * (canvas.height - 350) + 175;
                 const pipeWidth = isMobile ? 50 : 80;
                 const pipeGap = isMobile ? 220 : 200; 
@@ -640,20 +670,31 @@
                     y: gapY, 
                     width: pipeWidth, 
                     gap: pipeGap, 
-                    scored: false 
+                    scored: false,
+                    baseY: gapY,
+                    baseGap: pipeGap
                 };
 
-                // Añadir tuberías pulsantes
-                if (score >= 150 && Math.random() < 0.4) { // 40% de probabilidad
-                    newPipe.pulsating = true;
-                    newPipe.pulseSpeed = (Math.random() * 0.02) + 0.03;
-                    newPipe.pulseOffset = Math.random() * Math.PI * 2;
-                    newPipe.baseGap = pipeGap;
+                // Añadir tuberías con movimiento a partir de 200 puntos
+                if (score >= 200 && Math.random() < 0.5) {
+                    const moveType = Math.random();
+                    if (moveType < 0.5) { // Pulsating
+                        newPipe.pulsating = true;
+                        newPipe.pulseSpeed = (Math.random() * 0.02) + 0.03;
+                        newPipe.pulseOffset = Math.random() * Math.PI * 2;
+                    } else { // Vertical shift
+                        newPipe.shifting = true;
+                        newPipe.shiftSpeed = (Math.random() * 0.015) + 0.02;
+                        newPipe.shiftOffset = Math.random() * Math.PI * 2;
+                    }
                 }
                 pipes.push(newPipe);
 
-                if (Math.random() > 0.5) {
-                    coins.push({ x: canvas.width + pipeWidth / 2, y: gapY, radius: 15, collected: false });
+                // Generar moneda
+                 if (score >= 50 && Math.random() < 0.1) {
+                    coins.push({ x: canvas.width + pipeWidth / 2, y: gapY, radius: 15, collected: false, type: 'powerup' });
+                } else if (Math.random() > 0.4) {
+                    coins.push({ x: canvas.width + pipeWidth / 2, y: gapY, radius: 15, collected: false, type: 'normal' });
                 }
             }
             
@@ -661,8 +702,12 @@
                 pipe.x -= currentPipeSpeed;
 
                 if (pipe.pulsating) {
-                    pipe.gap = pipe.baseGap - Math.sin(gameFrame * pipe.pulseSpeed + pipe.pulseOffset) * (isMobile ? 30 : 40);
+                    pipe.gap = pipe.baseGap - Math.sin(gameFrame * pipe.pulseSpeed + pipe.pulseOffset) * 35;
                 }
+                if (pipe.shifting) {
+                    pipe.y = pipe.baseY + Math.sin(gameFrame * pipe.shiftSpeed + pipe.shiftOffset) * 40;
+                }
+
 
                 if (pipe.x + pipe.width < 0) pipes.shift();
                 
@@ -685,8 +730,13 @@
                 
                 const dist = Math.hypot(bird.x - coin.x, bird.y - coin.y);
                 if (dist < bird.WIDTH/2 + coin.radius) {
-                    coinCount++;
-                    score += 5;
+                    if (coin.type === 'powerup') {
+                        isBoosted = true;
+                        boostTimer = 5 * FPS; // 5 segundos
+                    } else {
+                        coinCount++;
+                        score += 5;
+                    }
                     playCoinSound();
                     coins.splice(index, 1);
                 }
@@ -733,12 +783,23 @@
                 ctx.save();
                 ctx.translate(coin.x, coin.y);
                 ctx.scale(1, Math.sin(frameCount * 0.1) * 0.1 + 0.9); // Bobbing effect
-                const coinGrad = ctx.createRadialGradient(-5, -5, 2, 0, 0, coin.radius);
-                coinGrad.addColorStop(0, '#FFF');
-                coinGrad.addColorStop(0.5, '#FFD700');
-                coinGrad.addColorStop(1, '#DAA520');
+                
+                let coinGrad;
+                if (coin.type === 'powerup') {
+                    coinGrad = ctx.createRadialGradient(-5, -5, 2, 0, 0, coin.radius);
+                    coinGrad.addColorStop(0, '#FFB6C1');
+                    coinGrad.addColorStop(0.5, '#DC143C');
+                    coinGrad.addColorStop(1, '#8B0000');
+                    ctx.strokeStyle = '#8B0000';
+                } else {
+                    coinGrad = ctx.createRadialGradient(-5, -5, 2, 0, 0, coin.radius);
+                    coinGrad.addColorStop(0, '#FFF');
+                    coinGrad.addColorStop(0.5, '#FFD700');
+                    coinGrad.addColorStop(1, '#DAA520');
+                    ctx.strokeStyle = '#A07818';
+                }
+                
                 ctx.fillStyle = coinGrad;
-                ctx.strokeStyle = '#A07818';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
                 ctx.arc(0, 0, coin.radius, 0, 2*Math.PI);
