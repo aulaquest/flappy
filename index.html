@@ -122,23 +122,26 @@
 
         <!-- Pantalla de Game Over -->
         <div id="gameOverScreen" class="absolute inset-0 bg-black bg-opacity-70 flex-col items-center justify-center text-white text-center p-4 z-20 hidden">
-            <h2 class="text-6xl font-bold text-shadow mb-4 font-game text-red-500">Game Over</h2>
-            <p class="text-3xl mb-2 font-game">Puntuación: <span id="finalScore">0</span></p>
-            <p class="text-xl mb-4 font-game">Monedas: <span id="finalCoins">0</span></p>
-            <p class="text-xl mb-8 font-game">Intentos: <span id="attemptCounter">0</span></p>
-            <div class="flex flex-col gap-4">
-                <button id="retryButton" class="menu-button font-game bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-bold py-4 px-8 rounded-lg text-2xl shadow-lg transform hover:scale-105 transition-transform duration-200 border-4 border-yellow-600">
-                    Reintentar
-                </button>
-                <button id="exitToMenuButton" class="menu-button font-game bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg text-lg shadow-lg transform hover:scale-105 transition-transform duration-200 border-4 border-red-700">
-                    Salir al Menú
-                </button>
-            </div>
-            <div class="mt-8">
-                <p class="font-game text-sm mb-3">Compartir</p>
-                <div class="flex gap-4">
-                     <a id="shareWhatsapp" href="#" target="_blank" class="share-button" style="background-color: #25D366;">WhatsApp</a>
-                     <a id="shareTelegram" href="#" target="_blank" class="share-button" style="background-color: #0088cc;">Telegram</a>
+            <h2 class="text-4xl md:text-6xl font-bold text-shadow mb-2 font-game text-red-500">Game Over</h2>
+            <p class="text-2xl md:text-3xl mb-1 font-game">Puntuación: <span id="finalScore">0</span></p>
+            <p class="text-lg md:text-xl mb-2 font-game">Monedas: <span id="finalCoins">0</span></p>
+            <p class="text-lg md:text-xl mb-6 font-game">Intentos: <span id="attemptCounter">0</span></p>
+            
+            <div class="flex flex-col md:flex-row md:items-start md:gap-8">
+                <div class="flex flex-col gap-4">
+                    <button id="retryButton" class="menu-button font-game bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-bold py-3 px-6 md:py-4 md:px-8 rounded-lg text-xl md:text-2xl shadow-lg transform hover:scale-105 transition-transform duration-200 border-4 border-yellow-600">
+                        Reintentar
+                    </button>
+                    <button id="exitToMenuButton" class="menu-button font-game bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg text-base md:text-lg shadow-lg transform hover:scale-105 transition-transform duration-200 border-4 border-red-700">
+                        Salir al Menú
+                    </button>
+                </div>
+                <div class="mt-6 md:mt-0">
+                    <p class="font-game text-sm mb-3">Compartir</p>
+                    <div class="flex gap-4 justify-center">
+                         <a id="shareWhatsapp" href="#" target="_blank" class="share-button" style="background-color: #25D366;">WhatsApp</a>
+                         <a id="shareTelegram" href="#" target="_blank" class="share-button" style="background-color: #0088cc;">Telegram</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -535,15 +538,15 @@
             isMobile = window.matchMedia("(max-width: 768px)").matches || /Mobi|Android/i.test(navigator.userAgent);
             
             const birdScale = Math.max(0.5, canvas.height / 800);
-            responsiveSettings.birdWidth = (isMobile ? 42 : 50) * birdScale;
-            responsiveSettings.birdHeight = (isMobile ? 32 : 40) * birdScale;
+            responsiveSettings.birdWidth = (isMobile ? 48 : 50) * birdScale;
+            responsiveSettings.birdHeight = (isMobile ? 38 : 40) * birdScale;
 
             responsiveSettings.pipeWidth = Math.max(50, canvas.width * 0.1);
             
             const baseGapPercentage = (isMobile && canvas.width < canvas.height) ? 0.35 : (isMobile ? 0.45 : 0.28);
             responsiveSettings.pipeGap = Math.max(160, canvas.height * baseGapPercentage);
 
-            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(90 * (canvas.width / 400)) : 120;
+            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(75 * (canvas.width / 400)) : 120;
 
             responsiveSettings.pipeGapMargin = canvas.height * 0.15;
             responsiveSettings.pipeGapRange = canvas.height - responsiveSettings.pipeGap - (responsiveSettings.pipeGapMargin * 2);
