@@ -87,6 +87,13 @@
         #mobilePanel {
              background-color: rgba(15, 23, 42, 0.75); /* More translucent */
         }
+        
+        /* Ajuste para zoom out en móvil */
+        @media (max-width: 767px) {
+            #gameContainer.game-mode-mobile {
+                /* Esto se manejará por JS para ajustar parámetros, no con CSS transform */
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-900 flex items-center justify-center h-screen m-0">
@@ -281,6 +288,7 @@
         // --- Referencias a Elementos del DOM ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const gameContainer = document.getElementById('gameContainer');
         const startScreen = document.getElementById('startScreen');
         const simulationHud = document.getElementById('simulationHud');
         const simModeButton = document.getElementById('simModeButton');
@@ -369,6 +377,12 @@
             sol: { g: 45.0, bg: 'linear-gradient(to top, #111 0%, #000 100%)', planetColor: '#FFD700' }
         };
         const BIRD_PROPS = { WIDTH: 50, HEIGHT: 40, LIFT: 9, VELOCITY: 0, MASS: 1.0 };
+        const GAME_BACKGROUNDS = {
+            day: 'linear-gradient(to top, #87CEEB 0%, #4A90E2 100%)',
+            night: 'linear-gradient(to top, #0c0e1a 0%, #2c3e50 100%)',
+            sunrise: 'linear-gradient(to top, #f2994a, #f2c94c, #87CEEB)'
+        };
+        let currentGameBackground = '';
 
         // --- Funciones de Ayuda y Dibujo ---
         function initAudio() { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { console.error("Web Audio API is not supported in this browser"); } } }
@@ -378,12 +392,128 @@
         function playGameOverSound() { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'sawtooth'; o.frequency.setValueAtTime(440, audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 0.5); g.gain.setValueAtTime(0.3, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.5); }
         function setupPlanetDetails() { lunaCraters = []; for (let i = 0; i < 80; i++) { lunaCraters.push({ x: Math.random() * 1600 - 800, y: Math.random() * 800 - 400, radius: Math.random() * 50 + 5 }); } }
         function setupStars() { stars = []; for (let i = 0; i < 150; i++) { stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 1.5, alpha: Math.random(), twinkleOffset: Math.random() * 2 * Math.PI, twinkleSpeed: Math.random() * 0.03 + 0.01 }); } }
-        function manageEnvironment() { if (gameState === 'simulation') { if (currentPlanet === 'sol') { drawSunRays(); drawStars(); } else if (currentPlanet === 'tierra') { drawClouds(); } else { drawDistantGalaxy(); drawStars(); } } else if (gameState === 'game') { drawClouds(); } }
-        function drawSunRays() { const sunCenterX = canvas.width / 2; const sunCenterY = canvas.height * 1.5; const numRays = 16; for (let i = 0; i < numRays; i++) { ctx.save(); ctx.translate(sunCenterX, sunCenterY); const angle = (i / numRays) * Math.PI * 2 + frameCount * 0.001; ctx.rotate(angle); const rayGrad = ctx.createLinearGradient(150, 0, canvas.width, 0); const alpha = 0.1 + Math.sin(frameCount * 0.05 + i * 5) * 0.05; rayGrad.addColorStop(0, `rgba(255, 220, 180, ${alpha})`); rayGrad.addColorStop(1, 'rgba(255, 220, 180, 0)'); ctx.fillStyle = rayGrad; ctx.beginPath(); ctx.moveTo(150, 0); ctx.lineTo(canvas.width, -50); ctx.lineTo(canvas.width, 50); ctx.closePath(); ctx.fill(); ctx.restore(); } }
+        
+        function manageEnvironment() {
+            if (gameState === 'simulation') {
+                if (currentPlanet === 'sol') {
+                    drawSunRays();
+                    drawStars();
+                } else if (currentPlanet === 'tierra') {
+                    drawClouds();
+                } else {
+                    drawDistantGalaxy();
+                    drawStars();
+                }
+            } else if (gameState === 'game') {
+                 if (currentGameBackground === GAME_BACKGROUNDS.night) {
+                    drawStars();
+                }
+                drawClouds();
+            }
+        }
+        function drawSunRays() { const sunCenterX = canvas.width / 2; const sunCenterY = canvas.height * 1.1; const numRays = 16; for (let i = 0; i < numRays; i++) { ctx.save(); ctx.translate(sunCenterX, sunCenterY); const angle = (i / numRays) * Math.PI * 2 + frameCount * 0.001; ctx.rotate(angle); const rayGrad = ctx.createLinearGradient(150, 0, canvas.width, 0); const alpha = 0.1 + Math.sin(frameCount * 0.05 + i * 5) * 0.05; rayGrad.addColorStop(0, `rgba(255, 220, 180, ${alpha})`); rayGrad.addColorStop(1, 'rgba(255, 220, 180, 0)'); ctx.fillStyle = rayGrad; ctx.beginPath(); ctx.moveTo(150, 0); ctx.lineTo(canvas.width, -50); ctx.lineTo(canvas.width, 50); ctx.closePath(); ctx.fill(); ctx.restore(); } }
         function drawDistantGalaxy() { ctx.save(); ctx.translate(canvas.width * 0.8, canvas.height * 0.25); ctx.rotate(-0.4 + frameCount * -0.0001); let galaxyGrad = ctx.createRadialGradient(0,0,10, 0,0,150); galaxyGrad.addColorStop(0, 'rgba(255, 255, 255, 0.2)'); galaxyGrad.addColorStop(0.3, 'rgba(200, 200, 255, 0.1)'); galaxyGrad.addColorStop(1, 'rgba(150, 150, 255, 0)'); ctx.fillStyle = galaxyGrad; for(let i = 0; i < 800; i++) { let angle = i * 0.15; let dist = Math.pow(i, 0.7); let x = Math.cos(angle) * dist; let y = Math.sin(angle) * dist; ctx.beginPath(); ctx.arc(x, y, Math.random() * 1.5, 0, Math.PI * 2); ctx.fill(); } ctx.restore(); }
-        function drawClouds(){if(frameCount%150===0){clouds.push({x:canvas.width,y:Math.random()*canvas.height*.5,size:Math.random()*20+20,speed:Math.random()*.5+.5})}ctx.fillStyle='rgba(255, 255, 255, 0.9)';clouds.forEach(cloud=>{cloud.x-=cloud.speed;ctx.beginPath();ctx.ellipse(cloud.x, cloud.y,cloud.size*2,cloud.size,0,0,2*Math.PI);ctx.fill()});clouds=clouds.filter(cloud=>cloud.x+cloud.size*2>0)}
+        
+        function drawClouds(){
+            if(frameCount % 150 === 0){
+                clouds.push({
+                    x: canvas.width + 100,
+                    y: Math.random() * canvas.height * 0.5,
+                    parts: [],
+                    speed: Math.random() * 0.5 + 0.5
+                });
+                const baseSize = Math.random() * 20 + 20;
+                for(let i=0; i < (gameState === 'game' ? 5 : 1); i++) {
+                    clouds[clouds.length-1].parts.push({
+                        dx: (Math.random() - 0.5) * baseSize * 2,
+                        dy: (Math.random() - 0.5) * baseSize * 0.5,
+                        size: baseSize * (Math.random() * 0.5 + 0.5)
+                    });
+                }
+            }
+            
+            clouds.forEach(cloud => {
+                cloud.x -= cloud.speed;
+                if(gameState === 'game') {
+                    const grad = ctx.createLinearGradient(cloud.x, cloud.y - 30, cloud.x, cloud.y + 30);
+                    grad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+                    grad.addColorStop(1, 'rgba(210, 220, 230, 0.8)');
+                    ctx.fillStyle = grad;
+                } else {
+                    ctx.fillStyle='rgba(255, 255, 255, 0.9)';
+                }
+
+                ctx.beginPath();
+                cloud.parts.forEach(part => {
+                    ctx.moveTo(cloud.x + part.dx, cloud.y + part.dy);
+                    ctx.arc(cloud.x + part.dx, cloud.y + part.dy, part.size, 0, Math.PI * 2);
+                });
+                ctx.fill();
+            });
+
+            clouds = clouds.filter(cloud => cloud.x + 100 > 0);
+        }
+
         function drawStars() { stars.forEach(star => { star.alpha = 0.5 + 0.5 * Math.sin(star.twinkleOffset + frameCount * star.twinkleSpeed); ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`; ctx.beginPath(); ctx.arc(star.x, star.y, star.radius, 0, 2 * Math.PI); ctx.fill(); }); }
-        function drawBird(){ctx.save();const angle=bird.VELOCITY/15;ctx.translate(bird.x,bird.y);ctx.rotate(angle);const gradient=ctx.createRadialGradient(0,0,5,0,0,bird.WIDTH/2);gradient.addColorStop(0,'#FFEB3B');gradient.addColorStop(1,'#FBC02D');ctx.fillStyle=gradient;ctx.strokeStyle='#333';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,bird.WIDTH/2,bird.HEIGHT/2,0,0,2*Math.PI);ctx.fill();ctx.stroke();const wingFlap=Math.sin(frameCount*.3)*5;ctx.fillStyle='#FFF9C4';ctx.beginPath();ctx.moveTo(-bird.WIDTH/5,-wingFlap);ctx.quadraticCurveTo(0,-bird.HEIGHT/3-wingFlap,bird.WIDTH/4,-wingFlap);ctx.quadraticCurveTo(0,bird.HEIGHT/4-wingFlap,-bird.WIDTH/5,-wingFlap);ctx.fill();ctx.stroke();ctx.fillStyle='white';ctx.beginPath();ctx.arc(bird.WIDTH/4,-bird.HEIGHT/6,5,0,2*Math.PI);ctx.fill();ctx.stroke();ctx.fillStyle='black';ctx.beginPath();ctx.arc(bird.WIDTH/4+1,-bird.HEIGHT/6,2,0,2*Math.PI);ctx.fill();ctx.fillStyle='#F57C00';ctx.beginPath();ctx.moveTo(bird.WIDTH/2-5,-3);ctx.lineTo(bird.WIDTH/2+8,0);ctx.lineTo(bird.WIDTH/2-5,3);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}
+        
+        function drawBird() {
+            ctx.save();
+            const angle = Math.max(-Math.PI / 4, Math.min(Math.PI / 6, bird.VELOCITY / 15));
+            ctx.translate(bird.x, bird.y);
+            ctx.rotate(angle);
+            
+            // Cuerpo
+            const bodyGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, bird.WIDTH / 2);
+            bodyGrad.addColorStop(0, '#FFEB3B');
+            bodyGrad.addColorStop(1, '#FBC02D');
+            ctx.fillStyle = bodyGrad;
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, bird.WIDTH / 2, bird.HEIGHT / 2, 0, 0, 2 * Math.PI);
+            ctx.fill();
+
+            if (gameState === 'game') {
+                const innerShadow = ctx.createRadialGradient(0, 5, bird.WIDTH/4, 0, 0, bird.WIDTH/2);
+                innerShadow.addColorStop(0, 'rgba(0,0,0,0)');
+                innerShadow.addColorStop(1, 'rgba(0,0,0,0.25)');
+                ctx.fillStyle = innerShadow;
+                ctx.fill();
+            }
+             ctx.stroke();
+
+            // Ala
+            const wingFlap = Math.sin(frameCount * 0.4) * 5;
+            ctx.fillStyle = '#FFF9C4';
+            ctx.beginPath();
+            ctx.moveTo(-bird.WIDTH / 5, -wingFlap);
+            ctx.quadraticCurveTo(0, -bird.HEIGHT / 2.5 - wingFlap, bird.WIDTH / 4, -wingFlap);
+            ctx.quadraticCurveTo(0, bird.HEIGHT / 3 - wingFlap, -bird.WIDTH / 5, -wingFlap);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Ojo
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(bird.WIDTH / 4, -bird.HEIGHT / 6, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(bird.WIDTH / 4 + 1, -bird.HEIGHT / 6, 2, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Pico
+            ctx.fillStyle = '#F57C00';
+            ctx.beginPath();
+            ctx.moveTo(bird.WIDTH / 2 - 5, -3);
+            ctx.lineTo(bird.WIDTH / 2 + 8, 0);
+            ctx.lineTo(bird.WIDTH / 2 - 5, 3);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+        }
         function drawVectors(){const birdCenterX=bird.x;const birdCenterY=bird.y;ctx.save();ctx.strokeStyle='red';ctx.lineWidth=3;ctx.fillStyle='red';ctx.beginPath();ctx.moveTo(birdCenterX,birdCenterY);ctx.lineTo(birdCenterX,birdCenterY+50);ctx.lineTo(birdCenterX-5,birdCenterY+40);ctx.moveTo(birdCenterX,birdCenterY+50);ctx.lineTo(birdCenterX+5,birdCenterY+40);ctx.stroke();ctx.font="16px 'Press Start 2P'";ctx.fillText("g",birdCenterX+10,birdCenterY+45);ctx.restore();if(impulseTimer>0){ctx.save();ctx.strokeStyle='#00FF00';ctx.lineWidth=3;ctx.fillStyle='#00FF00';ctx.beginPath();ctx.moveTo(birdCenterX,birdCenterY);ctx.lineTo(birdCenterX,birdCenterY-50);ctx.lineTo(birdCenterX-5,birdCenterY-40);ctx.moveTo(birdCenterX,birdCenterY-50);ctx.lineTo(birdCenterX+5,birdCenterY-40);ctx.stroke();ctx.font="12px 'Press Start 2P'";ctx.fillText("Impulso",birdCenterX-30,birdCenterY-55);ctx.restore();impulseTimer--}}
 
         function resizeCanvas() {
@@ -397,6 +527,11 @@
                     graphCanvas.height = graphCanvas.parentElement.clientHeight;
                 }
             });
+             if (gameState === 'game') {
+                gameContainer.classList.toggle('game-mode-mobile', isMobile);
+            } else {
+                 gameContainer.classList.remove('game-mode-mobile');
+            }
         }
 
         function setup(mode) {
@@ -405,7 +540,7 @@
             setupStars();
             frameCount = 0; gameFrame = 0;
             history = { y: [], v: [], a: [] };
-            pipes = []; coins = []; score = 0; coinCount = 0; pipeSpeed = 3;
+            pipes = []; coins = []; score = 0; coinCount = 0; pipeSpeed = isMobile ? 2.5 : 3;
             
             if (mode === 'simulation') {
                 bird.x = canvas.width / 2.5;
@@ -419,11 +554,9 @@
             } else if (mode === 'game') {
                 bird.GRAVITY = (22 * PIXELS_PER_METER) / (FPS * FPS); 
                 bird.LIFT = (8.5 * PIXELS_PER_METER) / FPS; 
-                canvas.style.background = GRAVITY_PRESETS['tierra'].bg;
-                if (isMobile) { 
-                    bird.WIDTH = 40;
-                    bird.HEIGHT = 32;
-                }
+                canvas.style.background = GAME_BACKGROUNDS.day;
+                 currentGameBackground = GAME_BACKGROUNDS.day;
+                 gameContainer.classList.toggle('game-mode-mobile', isMobile);
             }
         }
 
@@ -433,10 +566,11 @@
             
             if (gameState === 'simulation') {
                 manageEnvironment();
-                if(currentPlanet !== 'sol') drawPlanet();
+                drawPlanet();
                 if (!isPaused) updateSimulation();
                 drawSimulation();
             } else if (gameState === 'game') {
+                updateGameBackground();
                 manageEnvironment();
                 if (!isPaused) updateGame();
                 drawGame();
@@ -445,6 +579,22 @@
             frameCount++; 
             requestAnimationFrame(gameLoop);
         }
+        
+        function updateGameBackground() {
+            const stage = Math.floor(score / 100) % 3;
+            let newBg;
+            switch(stage) {
+                case 0: newBg = GAME_BACKGROUNDS.day; break;
+                case 1: newBg = GAME_BACKGROUNDS.night; break;
+                case 2: newBg = GAME_BACKGROUNDS.sunrise; break;
+                default: newBg = GAME_BACKGROUNDS.day;
+            }
+            if (newBg !== currentGameBackground) {
+                currentGameBackground = newBg;
+                canvas.style.background = newBg;
+            }
+        }
+
 
         // --- SIMULATION LOGIC ---
         function updateSimulation() {
@@ -466,12 +616,13 @@
 
             // Pipes
             if (gameFrame % 120 === 0) {
-                const gapY = Math.random() * (canvas.height - 300) + 150;
-                const pipeWidth = isMobile ? 65 : 80;
-                pipes.push({ x: canvas.width, y: gapY, width: pipeWidth, gap: 200, scored: false });
+                const gapY = Math.random() * (canvas.height - 400) + 200;
+                const pipeWidth = isMobile ? 60 : 80;
+                const pipeGap = isMobile ? 240 : 200; // Aumento de gap para móvil
+                pipes.push({ x: canvas.width, y: gapY, width: pipeWidth, gap: pipeGap, scored: false });
 
                 if (Math.random() > 0.5) { // 50% chance to spawn a coin
-                    coins.push({ x: canvas.width + 40, y: gapY, radius: 15, collected: false });
+                    coins.push({ x: canvas.width + pipeWidth / 2, y: gapY, radius: 15, collected: false });
                 }
             }
             
@@ -490,8 +641,8 @@
                 if (!pipe.scored && pipe.x + pipe.width < bird.x) {
                     score++;
                     pipe.scored = true;
-                    playPointSound();
-                    if (score % 5 === 0) pipeSpeed += 0.2; // Increase difficulty
+                    // No sound for points, only for coins
+                    if (score > 0 && score % 5 === 0) pipeSpeed += 0.15; // Increase difficulty
                 }
             });
 
@@ -520,12 +671,12 @@
         function drawPipes() {
             pipes.forEach(pipe => {
                 const pipeGrad = ctx.createLinearGradient(pipe.x, 0, pipe.x + pipe.width, 0);
-                pipeGrad.addColorStop(0, '#558022');
-                pipeGrad.addColorStop(0.3, '#73BF29');
-                pipeGrad.addColorStop(1, '#558022');
+                pipeGrad.addColorStop(0, '#65a30d');
+                pipeGrad.addColorStop(0.3, '#a3e635');
+                pipeGrad.addColorStop(1, '#65a30d');
                 ctx.fillStyle = pipeGrad;
 
-                const pipeBorder = '#3c5d18';
+                const pipeBorder = '#4d7c0f';
                 const capHeight = 30;
 
                 // Top Pipe
@@ -538,6 +689,22 @@
                 ctx.fillRect(pipe.x, pipe.y + pipe.gap / 2, pipe.width, canvas.height);
                 ctx.fillStyle = pipeBorder;
                 ctx.fillRect(pipe.x - 5, pipe.y + pipe.gap / 2, pipe.width + 10, capHeight);
+
+                // Highlight & Texture
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.fillRect(pipe.x, pipe.y - pipe.gap / 2 - capHeight, 5, capHeight);
+                ctx.fillRect(pipe.x, pipe.y + pipe.gap / 2, 5, capHeight);
+                ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                 for(let i = 0; i < 5; i++) {
+                    let yLineTop = Math.random() * (pipe.y - pipe.gap / 2);
+                    ctx.moveTo(pipe.x, yLineTop); ctx.lineTo(pipe.x + pipe.width, yLineTop);
+                    let yLineBottom = pipe.y + pipe.gap / 2 + Math.random() * (canvas.height - (pipe.y + pipe.gap/2));
+                    ctx.moveTo(pipe.x, yLineBottom); ctx.lineTo(pipe.x + pipe.width, yLineBottom);
+                 }
+                ctx.stroke();
+
             });
         }
         function drawCoins() {
@@ -588,23 +755,27 @@
             history.y.push(Math.max(0, heightMeters)); history.v.push(velocityMs); history.a.push(-accelerationMs2);
             if(history.y.length > 300) { history.y.shift(); history.v.shift(); history.a.shift(); }
         }
+        
         function drawPlanet() {
             ctx.save();
             ctx.translate(canvas.width / 2, canvas.height * 1.5);
             const rotation = frameCount * 0.0005;
             ctx.rotate(rotation);
+            
+            const planetRadius = canvas.height;
+            
             ctx.beginPath();
-            ctx.arc(0, 0, canvas.height, 0, 2 * Math.PI);
+            ctx.arc(0, 0, planetRadius, 0, 2 * Math.PI);
             ctx.fillStyle = GRAVITY_PRESETS[currentPlanet].planetColor;
             ctx.fill();
             ctx.clip(); 
             switch(currentPlanet) {
                 case 'tierra':
-                    const atmosphereGrad = ctx.createRadialGradient(0, 0, canvas.height * 0.95, 0, 0, canvas.height);
+                    const atmosphereGrad = ctx.createRadialGradient(0, 0, planetRadius * 0.95, 0, 0, planetRadius);
                     atmosphereGrad.addColorStop(0, 'transparent');
                     atmosphereGrad.addColorStop(1, 'rgba(135, 206, 250, 0.4)');
                     ctx.fillStyle = atmosphereGrad;
-                    ctx.fillRect(-canvas.height, -canvas.height, canvas.height * 2, canvas.height * 2);
+                    ctx.fillRect(-planetRadius, -planetRadius, planetRadius * 2, planetRadius * 2);
 
                     ctx.fillStyle = '#228B22'; // Verde continentes
                     ctx.beginPath();
@@ -638,7 +809,7 @@
                 case 'marte':
                      ctx.fillStyle = 'rgba(255,255,255,0.9)';
                      ctx.beginPath();
-                     ctx.arc(0, -canvas.height + 30, 180, 0, 2 * Math.PI);
+                     ctx.arc(0, -planetRadius + 30, 180, 0, 2 * Math.PI);
                      ctx.fill();
                      ctx.fillStyle = 'rgba(0,0,0,0.2)';
                      ctx.beginPath();
@@ -662,11 +833,11 @@
                     for(let i=-6; i<7; i++) {
                         ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 230, 200, 0.3)' : 'rgba(130, 80, 50, 0.3)';
                         ctx.beginPath(); let y_base = i * 80;
-                        ctx.moveTo(-canvas.height * 1.5, y_base - 40);
-                        for (let x = -canvas.height * 1.5; x < canvas.height * 1.5; x += 50) {
+                        ctx.moveTo(-planetRadius * 1.5, y_base - 40);
+                        for (let x = -planetRadius * 1.5; x < planetRadius * 1.5; x += 50) {
                             ctx.lineTo(x, y_base + Math.sin(x / 200 + i) * 20 - 40);
                         }
-                        ctx.lineTo(canvas.height * 1.5, y_base + 40); ctx.lineTo(-canvas.height * 1.5, y_base + 40);
+                        ctx.lineTo(planetRadius * 1.5, y_base + 40); ctx.lineTo(-planetRadius * 1.5, y_base + 40);
                         ctx.closePath(); ctx.fill();
                     }
                     ctx.fillStyle = '#c5693c'; ctx.beginPath();
@@ -677,12 +848,11 @@
                     ctx.fill();
                     break;
                 case 'saturno':
-                    const saturnRadius = canvas.height * 0.6;
+                    const saturnRadius = planetRadius * 0.6;
                     const tilt = -0.3;
                     ctx.save();
                     ctx.rotate(tilt);
 
-                    // Back rings
                     drawRingPart(saturnRadius * 1.9, saturnRadius * 0.65, saturnRadius * 0.2, 'rgba(180, 170, 160, 0.7)', true);
                     drawRingPart(saturnRadius * 1.5, saturnRadius * 0.5, saturnRadius * 0.25, 'rgba(210, 200, 180, 0.8)', true);
                     
@@ -704,8 +874,9 @@
                     ctx.restore();
                     break;
                  case 'sol':
-                    ctx.rotate(-rotation); // Cancel planet rotation for static sun
-                    const sunRadius = canvas.height * 0.8;
+                    ctx.rotate(-rotation); // Cancel planet rotation
+                    ctx.translate(0, -planetRadius * 0.4); // Move sun up
+                    const sunRadius = planetRadius * 0.8;
                     
                     let sunGrad = ctx.createRadialGradient(-50, -50, 20, 0, 0, sunRadius);
                     sunGrad.addColorStop(0, 'white');
@@ -715,6 +886,27 @@
                     ctx.beginPath();
                     ctx.arc(0, 0, sunRadius, 0, 2 * Math.PI);
                     ctx.fill();
+                    
+                    // Turbulent surface effect
+                    ctx.globalCompositeOperation = 'overlay';
+                    ctx.globalAlpha = 0.2;
+                    for (let i = 0; i < 20; i++) {
+                        ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.5})`;
+                        ctx.beginPath();
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = Math.random() * sunRadius;
+                        const size = Math.random() * 80 + 20;
+                        ctx.ellipse(
+                            Math.cos(angle) * dist, 
+                            Math.sin(angle) * dist, 
+                            size + Math.sin(frameCount * 0.02 + i) * 10, 
+                            size/2 + Math.cos(frameCount * 0.03 + i) * 5, 
+                            Math.random() * Math.PI * 2, 0, Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.globalAlpha = 1;
                     
                     // Flares
                     ctx.strokeStyle = `rgba(255, 200, 100, ${0.5 + Math.sin(frameCount * 0.1) * 0.2})`;
@@ -870,4 +1062,3 @@
     </script>
 </body>
 </html>
-
