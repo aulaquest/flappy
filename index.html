@@ -111,6 +111,9 @@
                     Juego
                 </button>
             </div>
+            <button id="closeTabButton" class="absolute bottom-4 left-4 text-xs font-game bg-gray-700/50 hover:bg-red-700/80 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200">
+                Cerrar
+            </button>
              <a id="creditLink" href="https://aulaquest.com" target="_blank" class="absolute bottom-4 right-4 text-white text-xs opacity-70 hover:opacity-100 transition-opacity z-30 font-game" style="text-shadow: 1px 1px 2px black;">creado por aulaquest</a>
         </div>
         
@@ -221,9 +224,9 @@
 
                 <!-- Sliding Panel (Mobile) -->
                 <div id="mobilePanel" class="fixed top-0 left-0 h-full w-4/5 max-w-[300px] backdrop-blur-sm z-40 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out pointer-events-auto overflow-y-auto">
-                     <button id="mobilePanelCloseBtn" class="absolute top-3 right-3 text-3xl font-bold text-white/70 hover:text-white">&times;</button>
                     <div class="flex flex-col gap-6 text-white pt-8">
                         <div>
+                             <button id="mobilePanelCloseBtnText" class="text-base w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-3 rounded-lg transition-all mb-4">Cerrar Menú</button>
                              <button id="mobileGuideBtn" class="text-base w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 rounded-lg transition-all">Ver Guía de Simulación</button>
                         </div>
                         <div>
@@ -301,6 +304,7 @@
         const simModeButton = document.getElementById('simModeButton');
         const gameModeButton = document.getElementById('gameModeButton');
         const didacticTip = document.getElementById('didacticTip');
+        const closeTabButton = document.getElementById('closeTabButton');
 
         // --- DOM Juego ---
         const gameHud = document.getElementById('gameHud');
@@ -336,7 +340,7 @@
         // --- DOM Móvil ---
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const mobilePanel = document.getElementById('mobilePanel');
-        const mobilePanelCloseBtn = document.getElementById('mobilePanelCloseBtn');
+        const mobilePanelCloseBtnText = document.getElementById('mobilePanelCloseBtnText');
         const mobilePanelOverlay = document.getElementById('mobilePanelOverlay');
         const mobilePausePlayBtn = document.getElementById('mobilePausePlayBtn');
         const mobileExitBtn = document.getElementById('mobileExitBtn');
@@ -543,9 +547,9 @@
 
             let birdScale;
             if (isMobile && isLandscape) {
-                birdScale = canvas.height / 350; // Scale relative to landscape height
+                birdScale = canvas.height / 300; // Aumentado para pájaro más grande en apaisado
             } else {
-                birdScale = canvas.height / 800; // Scale relative to portrait height
+                birdScale = canvas.height / 800;
             }
             birdScale = Math.max(0.5, birdScale);
 
@@ -554,10 +558,10 @@
 
             responsiveSettings.pipeWidth = Math.max(50, canvas.width * 0.1);
             
-            const baseGapPercentage = (isMobile && canvas.width < canvas.height) ? 0.35 : (isMobile ? 0.45 : 0.28);
+            const baseGapPercentage = (isMobile && !isLandscape) ? 0.35 : (isMobile ? 0.45 : 0.28);
             responsiveSettings.pipeGap = Math.max(160, canvas.height * baseGapPercentage);
 
-            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(65 * (canvas.width / 400)) : 120;
+            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(65 * (canvas.width / 400)) : Math.max(120, canvas.width / 7);
 
             responsiveSettings.pipeGapMargin = canvas.height * 0.15;
             responsiveSettings.pipeGapRange = canvas.height - responsiveSettings.pipeGap - (responsiveSettings.pipeGapMargin * 2);
@@ -1119,6 +1123,7 @@
 
         async function enterMobileExperience() {
             try {
+                if(document.fullscreenElement) return; // Ya está en pantalla completa
                 if (document.documentElement.requestFullscreen) {
                     await document.documentElement.requestFullscreen();
                 } else if (document.documentElement.webkitRequestFullscreen) { /* Safari */
@@ -1213,6 +1218,7 @@
         pausePlayBtn.addEventListener('click', togglePause); mobilePausePlayBtn.addEventListener('click', togglePause);
         guideButton.addEventListener('click', openGuide); mobileGuideBtn.addEventListener('click', openGuide);
         closeGuideBtn.addEventListener('click', () => guidePopup.classList.add('hidden'));
+        closeTabButton.addEventListener('click', () => window.close());
 
         liftSlider.addEventListener('input', handleLiftChange); mobileLiftSlider.addEventListener('input', handleLiftChange);
         massSlider.addEventListener('input', handleMassChange); mobileMassSlider.addEventListener('input', handleMassChange);
@@ -1224,13 +1230,13 @@
         function openMobilePanel() { mobilePanelOverlay.classList.remove('hidden'); setTimeout(() => { mobilePanel.classList.remove('-translate-x-full'); mobilePanelOverlay.classList.remove('opacity-0'); }, 10); }
         function closeMobilePanel() { mobilePanel.classList.add('-translate-x-full'); mobilePanelOverlay.classList.add('opacity-0'); setTimeout(() => mobilePanelOverlay.classList.add('hidden'), 300); }
         mobileMenuBtn.addEventListener('click', openMobilePanel);
-        mobilePanelCloseBtn.addEventListener('click', closeMobilePanel);
+        mobilePanelCloseBtnText.addEventListener('click', closeMobilePanel);
         mobilePanelOverlay.addEventListener('click', closeMobilePanel);
         
         window.onload=()=>{ 
             resizeCanvas(); 
             if (isMobile) {
-                // No forcing landscape on load, only when game starts.
+                enterMobileExperience();
             }
             setup('simulation'); 
             startScreenLoop(); 
