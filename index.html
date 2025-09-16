@@ -124,6 +124,9 @@
             <button id="retryButton" class="menu-button font-game bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-bold py-4 px-8 rounded-lg text-2xl shadow-lg transform hover:scale-105 transition-transform duration-200 border-4 border-yellow-600">
                 Reintentar
             </button>
+            <button id="exitToMenuButton" class="mt-4 menu-button font-game bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg text-lg shadow-lg transform hover:scale-105 transition-transform duration-200 border-4 border-red-700">
+                Salir al Menú
+            </button>
         </div>
 
 
@@ -296,6 +299,7 @@
         const finalScore = document.getElementById('finalScore');
         const finalCoins = document.getElementById('finalCoins');
         const retryButton = document.getElementById('retryButton');
+        const exitToMenuButton = document.getElementById('exitToMenuButton');
         const gameBackToMenuBtn = document.getElementById('gameBackToMenuBtn');
         const attemptCounter = document.getElementById('attemptCounter');
 
@@ -668,7 +672,7 @@
                  currentPipeSpeed *= (1 + percentageIncrease / 100);
             }
             if (isBoosted) {
-                currentPipeSpeed *= 1.10;
+                currentPipeSpeed *= 1.20;
             }
 
             // --- Generación y actualización de tuberías ---
@@ -1117,6 +1121,7 @@
         simModeButton.addEventListener('click', startSimulation); 
         gameModeButton.addEventListener('click', startGame);
         retryButton.addEventListener('click', startGame);
+        exitToMenuButton.addEventListener('click', goToMenu);
         gameBackToMenuBtn.addEventListener('click', goToMenu);
         exitButton.addEventListener('click', goToMenu); mobileExitBtn.addEventListener('click', goToMenu);
         pausePlayBtn.addEventListener('click', togglePause); mobilePausePlayBtn.addEventListener('click', togglePause);
