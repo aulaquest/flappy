@@ -160,6 +160,7 @@
                     <p class="text-sm">Tiempo: <span id="hudTime">0.00</span> s</p>
                     <p class="text-sm">Altura: <span id="hudHeight">0.00</span> m</p>
                     <p class="text-sm">Velocidad: <span id="hudVelocity">0.00</span> m/s</p>
+                    <p class="text-sm">Aceleración (g): <span id="hudAcceleration">0.00</span> m/s²</p>
                     
                     <h3 class="text-base mt-4 mb-2 text-yellow-300 font-bold">Gráficas de Movimiento</h3>
                     <div id="graphPanel" class="flex flex-col flex-grow min-h-0 gap-2">
@@ -194,7 +195,7 @@
                     
                     <div class="flex flex-col flex-grow min-h-0">
                          <h3 class="text-base mb-2 text-yellow-300 font-bold">Entorno Planetario</h3>
-                        <div class="grid grid-cols-3 gap-2 mb-2 text-[10px]">
+                        <div class="grid grid-cols-3 gap-2 mb-2 text-[10px] md:text-xs">
                             <button id="earthBtn" class="planet-button">Tierra</button>
                             <button id="moonBtn" class="planet-button">Luna</button>
                             <button id="marsBtn" class="planet-button">Marte</button>
@@ -234,6 +235,7 @@
                             <p class="text-sm">Tiempo: <span id="mobileHudTime">0.00</span> s</p>
                             <p class="text-sm">Altura: <span id="mobileHudHeight">0.00</span> m</p>
                             <p class="text-sm">Velocidad: <span id="mobileHudVelocity">0.00</span> m/s</p>
+                            <p class="text-sm">Aceleración (g): <span id="mobileHudAcceleration">0.00</span> m/s²</p>
                         </div>
                         
                         <div>
@@ -321,6 +323,7 @@
         const hudTime = document.getElementById('hudTime');
         const hudHeight = document.getElementById('hudHeight');
         const hudVelocity = document.getElementById('hudVelocity');
+        const hudAcceleration = document.getElementById('hudAcceleration');
         const liftSlider = document.getElementById('liftSlider');
         const massSlider = document.getElementById('massSlider');
         const liftValue = document.getElementById('liftValue');
@@ -348,6 +351,7 @@
         const mobileHudTime = document.getElementById('mobileHudTime');
         const mobileHudHeight = document.getElementById('mobileHudHeight');
         const mobileHudVelocity = document.getElementById('mobileHudVelocity');
+        const mobileHudAcceleration = document.getElementById('mobileHudAcceleration');
         const mobileLiftSlider = document.getElementById('mobileLiftSlider');
         const mobileMassSlider = document.getElementById('mobileMassSlider');
         const mobileLiftValue = document.getElementById('mobileLiftValue');
@@ -368,7 +372,7 @@
         // --- Estado del Juego y Simulación ---
         let gameState = 'start', isPaused = false, currentPlanet = 'tierra';
         let bird, frameCount = 0, clouds, stars, impulseTimer = 0, simulationTime = 0;
-        let history = { y: [], v: [] };
+        let history = { y: [], v: [], a: [] };
         let audioCtx;
         let lunaCraters = [];
         let pipes = [], coins = [], score = 0, coinCount = 0, gameFrame = 0, basePipeSpeed = 3, attemptCount = 0;
@@ -547,7 +551,7 @@
 
             let birdScale;
             if (isMobile && isLandscape) {
-                birdScale = canvas.height / 300; // Aumentado para pájaro más grande en apaisado
+                birdScale = canvas.height / 400; // Ajustado para pájaro más pequeño en apaisado
             } else {
                 birdScale = canvas.height / 800;
             }
@@ -561,7 +565,7 @@
             const baseGapPercentage = (isMobile && !isLandscape) ? 0.35 : (isMobile ? 0.45 : 0.28);
             responsiveSettings.pipeGap = Math.max(160, canvas.height * baseGapPercentage);
 
-            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(65 * (canvas.width / 400)) : Math.max(120, canvas.width / 7);
+            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(75 * (canvas.width / 400)) : 120;
 
             responsiveSettings.pipeGapMargin = canvas.height * 0.15;
             responsiveSettings.pipeGapRange = canvas.height - responsiveSettings.pipeGap - (responsiveSettings.pipeGapMargin * 2);
@@ -593,7 +597,7 @@
             clouds = [];
             setupStars();
             frameCount = 0; gameFrame = 0;
-            history = { y: [], v: [] };
+            history = { y: [], v: [], a: [] };
             pipes = []; coins = []; score = 0; coinCount = 0; 
             basePipeSpeed = isMobile ? 2.5 : 3;
             isBoosted = false; boostTimer = 0;
@@ -872,6 +876,7 @@
         function updateHud() {
             const heightMeters = (canvas.height - bird.y) / PIXELS_PER_METER;
             const velocityMs = (-bird.VELOCITY * FPS) / PIXELS_PER_METER;
+            const accelerationMs2 = (bird.GRAVITY * FPS * FPS) / PIXELS_PER_METER;
             
             hudTime.textContent = simulationTime.toFixed(2);
             mobileHudTime.textContent = simulationTime.toFixed(2);
@@ -879,9 +884,11 @@
             mobileHudHeight.textContent = heightMeters.toFixed(2);
             hudVelocity.textContent = velocityMs.toFixed(2);
             mobileHudVelocity.textContent = velocityMs.toFixed(2);
+            hudAcceleration.textContent = (-accelerationMs2).toFixed(2);
+            mobileHudAcceleration.textContent = (-accelerationMs2).toFixed(2);
 
-            history.y.push(Math.max(0, heightMeters)); history.v.push(velocityMs);
-            if(history.y.length > 300) { history.y.shift(); history.v.shift(); }
+            history.y.push(Math.max(0, heightMeters)); history.v.push(velocityMs); history.a.push(-accelerationMs2);
+            if(history.y.length > 300) { history.y.shift(); history.v.shift(); history.a.shift(); }
         }
         
         function drawPlanet() {
