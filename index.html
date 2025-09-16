@@ -551,21 +551,21 @@
 
             let birdScale;
             if (isMobile && isLandscape) {
-                birdScale = canvas.height / 400; // Ajustado para pájaro más pequeño en apaisado
+                birdScale = canvas.height / 500; 
             } else {
                 birdScale = canvas.height / 800;
             }
             birdScale = Math.max(0.5, birdScale);
 
-            responsiveSettings.birdWidth = (isMobile ? 52 : 50) * birdScale;
-            responsiveSettings.birdHeight = (isMobile ? 42 : 40) * birdScale;
+            responsiveSettings.birdWidth = (isMobile ? 42 : 50) * birdScale;
+            responsiveSettings.birdHeight = (isMobile ? 32 : 40) * birdScale;
 
             responsiveSettings.pipeWidth = Math.max(50, canvas.width * 0.1);
             
             const baseGapPercentage = (isMobile && !isLandscape) ? 0.35 : (isMobile ? 0.45 : 0.28);
             responsiveSettings.pipeGap = Math.max(160, canvas.height * baseGapPercentage);
 
-            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(75 * (canvas.width / 400)) : 120;
+            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(85 * (canvas.width / 400)) : Math.max(120, canvas.width / 6.5);
 
             responsiveSettings.pipeGapMargin = canvas.height * 0.15;
             responsiveSettings.pipeGapRange = canvas.height - responsiveSettings.pipeGap - (responsiveSettings.pipeGapMargin * 2);
