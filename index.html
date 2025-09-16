@@ -88,12 +88,6 @@
              background-color: rgba(15, 23, 42, 0.75); /* More translucent */
         }
         
-        /* Ajuste para zoom out en móvil */
-        @media (max-width: 767px) {
-            #gameContainer.game-mode-mobile {
-                /* Esto se manejará por JS para ajustar parámetros, no con CSS transform */
-            }
-        }
     </style>
 </head>
 <body class="bg-gray-900 flex items-center justify-center h-screen m-0">
@@ -346,7 +340,7 @@
         const mobileMassValue = document.getElementById('mobileMassValue');
         const mobilePlanetButtons = { 
             tierra: document.getElementById('mobileEarthBtn'), luna: document.getElementById('mobileMoonBtn'), marte: document.getElementById('mobileMarsBtn'),
-            jupiter: document.getElementById('mobileJupiterBtn'), saturno: document.getElementById('mobileSaturnBtn'), sol: document.getElementById('mobileSunBtn')
+            jupiter: document.getElementById('mobileJupiterBtn'), saturno: document.getElementById('mobileSunBtn'), sol: document.getElementById('mobileSunBtn')
         };
         const mobileGraphCanvasY = document.getElementById('mobileGraphY');
         const mobileGraphCanvasV = document.getElementById('mobileGraphV');
@@ -366,6 +360,7 @@
         let pipes = [], coins = [], score = 0, coinCount = 0, gameFrame = 0, basePipeSpeed = 3, attemptCount = 0;
         let isMobile = false;
         let isBoosted = false, boostTimer = 0;
+        let responsiveSettings = {};
         
         // --- Constantes Físicas ---
         const PIXELS_PER_METER = 20, FPS = 60;
@@ -530,25 +525,46 @@
         }
         function drawVectors(){const birdCenterX=bird.x;const birdCenterY=bird.y;ctx.save();ctx.strokeStyle='red';ctx.lineWidth=3;ctx.fillStyle='red';ctx.beginPath();ctx.moveTo(birdCenterX,birdCenterY);ctx.lineTo(birdCenterX,birdCenterY+50);ctx.lineTo(birdCenterX-5,birdCenterY+40);ctx.moveTo(birdCenterX,birdCenterY+50);ctx.lineTo(birdCenterX+5,birdCenterY+40);ctx.stroke();ctx.font="16px 'Press Start 2P'";ctx.fillText("g",birdCenterX+10,birdCenterY+45);ctx.restore();if(impulseTimer>0){ctx.save();ctx.strokeStyle='#00FF00';ctx.lineWidth=3;ctx.fillStyle='#00FF00';ctx.beginPath();ctx.moveTo(birdCenterX,birdCenterY);ctx.lineTo(birdCenterX,birdCenterY-50);ctx.lineTo(birdCenterX-5,birdCenterY-40);ctx.moveTo(birdCenterX,birdCenterY-50);ctx.lineTo(birdCenterX+5,birdCenterY-40);ctx.stroke();ctx.font="12px 'Press Start 2P'";ctx.fillText("Impulso",birdCenterX-30,birdCenterY-55);ctx.restore();impulseTimer--}}
 
+        function updateResponsiveSettings() {
+            isMobile = window.matchMedia("(max-width: 768px)").matches;
+            
+            const birdScale = Math.max(0.5, canvas.height / 800);
+            responsiveSettings.birdWidth = (isMobile ? 38 : 50) * birdScale;
+            responsiveSettings.birdHeight = (isMobile ? 28 : 40) * birdScale;
+
+            responsiveSettings.pipeWidth = Math.max(50, canvas.width * 0.1);
+            
+            const baseGapPercentage = (isMobile && canvas.width < canvas.height) ? 0.35 : (isMobile ? 0.45 : 0.28);
+            responsiveSettings.pipeGap = Math.max(160, canvas.height * baseGapPercentage);
+
+            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(110 * (canvas.width / 400)) : 120;
+
+            responsiveSettings.pipeGapMargin = canvas.height * 0.15;
+            responsiveSettings.pipeGapRange = canvas.height - responsiveSettings.pipeGap - (responsiveSettings.pipeGapMargin * 2);
+        }
+
         function resizeCanvas() {
             const container = document.getElementById('gameContainer');
             canvas.width = container.clientWidth;
             canvas.height = container.clientHeight;
-            isMobile = canvas.width < 768;
+            
             [graphCanvasY, graphCanvasV, graphCanvasA, mobileGraphCanvasY, mobileGraphCanvasV].forEach(graphCanvas => {
                 if (graphCanvas && graphCanvas.parentElement) {
                     graphCanvas.width = graphCanvas.parentElement.clientWidth;
                     graphCanvas.height = graphCanvas.parentElement.clientHeight;
                 }
             });
-             if (gameState === 'game') {
-                gameContainer.classList.toggle('game-mode-mobile', isMobile);
-            } else {
-                 gameContainer.classList.remove('game-mode-mobile');
+
+            updateResponsiveSettings();
+            
+            if (bird) {
+                bird.WIDTH = responsiveSettings.birdWidth;
+                bird.HEIGHT = responsiveSettings.birdHeight;
             }
         }
 
         function setup(mode) {
+            updateResponsiveSettings();
             bird = { ...BIRD_PROPS, x: canvas.width / 2, y: canvas.height / 2, trail: [] };
             clouds = [];
             setupStars();
@@ -568,16 +584,12 @@
                 pausePlayBtn.textContent = 'Pausa'; mobilePausePlayBtn.textContent = 'Pausa';
                 updateSliderLabels();
             } else if (mode === 'game') {
+                bird.WIDTH = responsiveSettings.birdWidth;
+                bird.HEIGHT = responsiveSettings.birdHeight;
                 bird.GRAVITY = (22 * PIXELS_PER_METER) / (FPS * FPS); 
                 bird.LIFT = (8.5 * PIXELS_PER_METER) / FPS; 
                 canvas.style.background = GAME_BACKGROUNDS.day;
                  currentGameBackground = GAME_BACKGROUNDS.day;
-                 gameContainer.classList.toggle('game-mode-mobile', isMobile);
-                 // Simulación de "Zoom out" en móvil ajustando parámetros
-                 if (isMobile) {
-                    bird.WIDTH = 38;
-                    bird.HEIGHT = 28;
-                 }
             }
         }
 
@@ -660,41 +672,36 @@
             }
 
             // --- Generación y actualización de tuberías ---
-            if (gameFrame % (isMobile ? 110 : 120) === 0) {
-                const gapY = Math.random() * (canvas.height - 350) + 175;
-                const pipeWidth = isMobile ? 50 : 80;
-                const pipeGap = isMobile ? 220 : 200; 
-                
+            if (gameFrame % responsiveSettings.pipeSpawnInterval === 0) {
+                const gapY = Math.random() * responsiveSettings.pipeGapRange + responsiveSettings.pipeGapMargin + (responsiveSettings.pipeGap / 2);
+
                 const newPipe = { 
                     x: canvas.width, 
                     y: gapY, 
-                    width: pipeWidth, 
-                    gap: pipeGap, 
+                    width: responsiveSettings.pipeWidth, 
+                    gap: responsiveSettings.pipeGap, 
                     scored: false,
                     baseY: gapY,
-                    baseGap: pipeGap
+                    baseGap: responsiveSettings.pipeGap
                 };
 
-                // Añadir tuberías con movimiento a partir de 200 puntos
                 if (score >= 200 && Math.random() < 0.5) {
                     const moveType = Math.random();
-                    if (moveType < 0.5) { // Pulsating
+                    if (moveType < 0.5) { 
                         newPipe.pulsating = true;
                         newPipe.pulseSpeed = (Math.random() * 0.02) + 0.03;
                         newPipe.pulseOffset = Math.random() * Math.PI * 2;
-                    } else { // Vertical shift
+                    } else { 
                         newPipe.shifting = true;
                         newPipe.shiftSpeed = (Math.random() * 0.015) + 0.02;
                         newPipe.shiftOffset = Math.random() * Math.PI * 2;
                     }
                 }
                 pipes.push(newPipe);
-
-                // Generar moneda
                  if (score >= 50 && Math.random() < 0.1) {
-                    coins.push({ x: canvas.width + pipeWidth / 2, y: gapY, radius: 15, collected: false, type: 'powerup' });
+                    coins.push({ x: canvas.width + newPipe.width / 2, y: gapY, radius: 15, collected: false, type: 'powerup' });
                 } else if (Math.random() > 0.4) {
-                    coins.push({ x: canvas.width + pipeWidth / 2, y: gapY, radius: 15, collected: false, type: 'normal' });
+                    coins.push({ x: canvas.width + newPipe.width / 2, y: gapY, radius: 15, collected: false, type: 'normal' });
                 }
             }
             
@@ -759,7 +766,7 @@
                 ctx.fillStyle = pipeGrad;
 
                 const pipeBorder = '#4d7c0f';
-                const capHeight = 30;
+                const capHeight = pipe.width * 0.4;
 
                 // Top Pipe
                 ctx.fillRect(pipe.x, 0, pipe.width, pipe.y - pipe.gap / 2);
@@ -1139,7 +1146,7 @@
             massValue.textContent=mass; mobileMassValue.textContent=mass;
         }
 
-        function startScreenLoop(){if(gameState!=='start')return;ctx.clearRect(0,0,canvas.width,canvas.height);manageEnvironment();bird.VELOCITY+=bird.GRAVITY;bird.y+=bird.VELOCITY;if(bird.y + bird.HEIGHT/2 > canvas.height){bird.y = canvas.height - bird.HEIGHT/2; bird.VELOCITY = 0;}drawBird();frameCount++;requestAnimationFrame(startScreenLoop)}
+        function startScreenLoop(){if(gameState!=='start')return;ctx.clearRect(0,0,canvas.width,canvas.height);updateResponsiveSettings();manageEnvironment();bird.VELOCITY+=bird.GRAVITY;bird.y+=bird.VELOCITY;if(bird.y + bird.HEIGHT/2 > canvas.height){bird.y = canvas.height - bird.HEIGHT/2; bird.VELOCITY = 0;}drawBird();frameCount++;requestAnimationFrame(startScreenLoop)}
 
     </script>
 </body>
