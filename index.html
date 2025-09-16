@@ -566,9 +566,9 @@
             const baseGapPercentage = (isMobile && !isLandscape) ? 0.35 : (isMobile ? 0.45 : 0.28);
             responsiveSettings.pipeGap = Math.max(160, canvas.height * baseGapPercentage);
 
-            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(85 * (canvas.width / 400)) : 120;
+            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(85 * (canvas.width / 400)) : Math.max(90, canvas.width / 10);
 
-            responsiveSettings.pipeGapMargin = canvas.height * 0.10; // Reducido para mayor dificultad
+            responsiveSettings.pipeGapMargin = canvas.height * 0.10;
             responsiveSettings.pipeGapRange = canvas.height - responsiveSettings.pipeGap - (responsiveSettings.pipeGapMargin * 2);
         }
 
@@ -1151,6 +1151,28 @@
                 console.log("No se pudo bloquear la orientación de la pantalla:", error);
             }
         }
+        
+        async function exitMobileExperience() {
+            try {
+                if (screen.orientation && screen.orientation.unlock) {
+                   await screen.orientation.unlock();
+                }
+            } catch (error) {
+                console.log("No se pudo desbloquear la orientación.", error);
+            }
+             try {
+                if (document.exitFullscreen) {
+                    await document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { /* Safari */
+                    await document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { /* IE11 */
+                    await document.msExitFullscreen();
+                }
+            } catch (err) {
+                console.log(`Error al salir del modo de pantalla completa: ${err.message}`);
+            }
+        }
+
 
         function startSimulation() { 
             setup('simulation'); gameState = 'simulation'; isPaused = false; 
@@ -1226,7 +1248,13 @@
         pausePlayBtn.addEventListener('click', togglePause); mobilePausePlayBtn.addEventListener('click', togglePause);
         guideButton.addEventListener('click', openGuide); mobileGuideBtn.addEventListener('click', openGuide);
         closeGuideBtn.addEventListener('click', () => guidePopup.classList.add('hidden'));
-        closeTabButton.addEventListener('click', () => window.close());
+        closeTabButton.addEventListener('click', () => {
+            if(isMobile) {
+                exitMobileExperience();
+            }
+             // La funcionalidad de window.close() es limitada por los navegadores
+            setTimeout(() => window.close(), 100);
+        });
 
         liftSlider.addEventListener('input', handleLiftChange); mobileLiftSlider.addEventListener('input', handleLiftChange);
         massSlider.addEventListener('input', handleMassChange); mobileMassSlider.addEventListener('input', handleMassChange);
