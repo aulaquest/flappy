@@ -137,14 +137,8 @@
             <div class="mt-8">
                 <p class="font-game text-sm mb-3">Compartir</p>
                 <div class="flex gap-4">
-                     <a id="shareWhatsapp" href="#" target="_blank" class="share-button" style="background-color: #25D366;">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.487 5.235 3.487 8.413 0 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.586-1.457l-6.354 1.654zm.789-21.216c-2.02 1.942-3.11 4.597-3.111 7.393.002 5.795 4.71 10.502 10.505 10.502 1.833 0 3.593-.464 5.12-1.318l.354-.216-1.127-4.102-1.428.783c-.509.282-1.159.435-1.82.434-3.109-.002-5.632-2.525-5.634-5.633.001-1.343.49-2.62 1.353-3.648l.245-.291.003-.002 2.895 5.011c.074.128.232.195.39.195.056 0 .113-.01.168-.033.235-.098.375-.33.336-.57l-1.09-3.957.149-.128c.55-.472 1.157-.848 1.81-1.111l4.032-1.096c.302-.082.457-.422.375-.724-.082-.303-.423-.457-.726-.375l-4.032 1.096c-.58.158-1.118.44-1.575.81l-.004.003-2.905-5.029c-.193-.335-.611-.431-.945-.238z"/></svg>
-                        WhatsApp
-                    </a>
-                    <a id="shareTelegram" href="#" target="_blank" class="share-button" style="background-color: #0088cc;">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M9.78 18.65l.288-4.234 7.525-6.9-11.434 4.536-4.159-1.325.002-.001s1.91-5.954 21-7.842l-2.012 18.553-6.402-4.759-4.011 3.963z"/></svg>
-                        Telegram
-                    </a>
+                     <a id="shareWhatsapp" href="#" target="_blank" class="share-button" style="background-color: #25D366;">WhatsApp</a>
+                     <a id="shareTelegram" href="#" target="_blank" class="share-button" style="background-color: #0088cc;">Telegram</a>
                 </div>
             </div>
         </div>
@@ -160,7 +154,6 @@
                     <p class="text-sm">Tiempo: <span id="hudTime">0.00</span> s</p>
                     <p class="text-sm">Altura: <span id="hudHeight">0.00</span> m</p>
                     <p class="text-sm">Velocidad: <span id="hudVelocity">0.00</span> m/s</p>
-                    <p class="text-sm">Aceleración: <span id="hudAcceleration">0.00</span> m/s²</p>
                     
                     <h3 class="text-base mt-4 mb-2 text-yellow-300 font-bold">Gráficas de Movimiento</h3>
                     <div id="graphPanel" class="flex flex-col flex-grow min-h-0 gap-2">
@@ -169,9 +162,6 @@
                          </div>
                          <div class="bg-black/20 rounded-md p-1 relative h-24">
                              <canvas id="graphV"></canvas>
-                         </div>
-                         <div class="bg-black/20 rounded-md p-1 relative h-24">
-                             <canvas id="graphA"></canvas>
                          </div>
                     </div>
                 </div>
@@ -237,7 +227,6 @@
                             <p class="text-sm">Tiempo: <span id="mobileHudTime">0.00</span> s</p>
                             <p class="text-sm">Altura: <span id="mobileHudHeight">0.00</span> m</p>
                             <p class="text-sm">Velocidad: <span id="mobileHudVelocity">0.00</span> m/s</p>
-                            <p class="text-sm">Aceleración: <span id="mobileHudAcceleration">0.00</span> m/s²</p>
                         </div>
                         
                         <div>
@@ -282,7 +271,7 @@
                         <ul class="list-disc list-inside space-y-2">
                             <li><strong>Parámetros Físicos:</strong> Usa los deslizadores para cambiar el <strong class="text-yellow-400">Impulso (Δv)</strong> y la <strong class="text-yellow-400">Masa</strong>.</li>
                             <li><strong>Entorno Planetario:</strong> Cambia la gravedad para ver cómo afecta al movimiento.</li>
-                            <li><strong>Gráficas:</strong> Analiza las 3 gráficas para ver cómo la Altura (y), Velocidad (v) y Aceleración (a) cambian en tiempo real.</li>
+                            <li><strong>Gráficas:</strong> Analiza las 2 gráficas para ver cómo la Altura (y) y la Velocidad (v) cambian en tiempo real.</li>
                         </ul>
                          <h3 class="text-lg text-yellow-300 font-bold pt-2 border-t border-slate-700/50">Ecuaciones Clave</h3>
                          <p>El movimiento del pájaro se rige por las ecuaciones del Movimiento Rectilíneo Uniformemente Acelerado (MRUA):</p>
@@ -291,7 +280,7 @@
                              <p>\( F_{gravedad} = m \cdot g \)</p>
                          </div>
                          <p class="text-xs italic">Donde <strong>y(t)</strong> es la altura en el tiempo <strong>t</strong>, <strong>v₀</strong> es la velocidad inicial, <strong>y₀</strong> la altura inicial, y <strong>g</strong> es la aceleración de la gravedad.</p>
-                        <p class="pt-2 border-t border-slate-700/50"><strong class="text-yellow-400">Concepto Clave:</strong> En ausencia de aire, todos los objetos caen con la misma aceleración. ¡Comprueba si cambiar la masa del pájaro afecta su aceleración en la gráfica!</p>
+                        <p class="pt-2 border-t border-slate-700/50"><strong class="text-yellow-400">Concepto Clave:</strong> En ausencia de aire, todos los objetos caen con la misma aceleración. ¡Comprueba si cambiar la masa del pájaro afecta su movimiento!</p>
                     </div>
                 </div>
             </div>
@@ -324,7 +313,6 @@
         const hudTime = document.getElementById('hudTime');
         const hudHeight = document.getElementById('hudHeight');
         const hudVelocity = document.getElementById('hudVelocity');
-        const hudAcceleration = document.getElementById('hudAcceleration');
         const liftSlider = document.getElementById('liftSlider');
         const massSlider = document.getElementById('massSlider');
         const liftValue = document.getElementById('liftValue');
@@ -338,10 +326,8 @@
         };
         const graphCanvasY = document.getElementById('graphY');
         const graphCanvasV = document.getElementById('graphV');
-        const graphCanvasA = document.getElementById('graphA');
         const graphCtxY = graphCanvasY.getContext('2d');
         const graphCtxV = graphCanvasV.getContext('2d');
-        const graphCtxA = graphCanvasA.getContext('2d');
 
         // --- DOM Móvil ---
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -353,7 +339,6 @@
         const mobileHudTime = document.getElementById('mobileHudTime');
         const mobileHudHeight = document.getElementById('mobileHudHeight');
         const mobileHudVelocity = document.getElementById('mobileHudVelocity');
-        const mobileHudAcceleration = document.getElementById('mobileHudAcceleration');
         const mobileLiftSlider = document.getElementById('mobileLiftSlider');
         const mobileMassSlider = document.getElementById('mobileMassSlider');
         const mobileLiftValue = document.getElementById('mobileLiftValue');
@@ -374,13 +359,14 @@
         // --- Estado del Juego y Simulación ---
         let gameState = 'start', isPaused = false, currentPlanet = 'tierra';
         let bird, frameCount = 0, clouds, stars, impulseTimer = 0, simulationTime = 0;
-        let history = { y: [], v: [], a: [] };
+        let history = { y: [], v: [] };
         let audioCtx;
         let lunaCraters = [];
         let pipes = [], coins = [], score = 0, coinCount = 0, gameFrame = 0, basePipeSpeed = 3, attemptCount = 0;
         let isMobile = false;
         let isBoosted = false, boostTimer = 0;
         let responsiveSettings = {};
+        let waitingForFirstTap = false;
         
         // --- Constantes Físicas ---
         const PIXELS_PER_METER = 20, FPS = 60;
@@ -549,15 +535,15 @@
             isMobile = window.matchMedia("(max-width: 768px)").matches || /Mobi|Android/i.test(navigator.userAgent);
             
             const birdScale = Math.max(0.5, canvas.height / 800);
-            responsiveSettings.birdWidth = (isMobile ? 38 : 50) * birdScale;
-            responsiveSettings.birdHeight = (isMobile ? 28 : 40) * birdScale;
+            responsiveSettings.birdWidth = (isMobile ? 42 : 50) * birdScale;
+            responsiveSettings.birdHeight = (isMobile ? 32 : 40) * birdScale;
 
             responsiveSettings.pipeWidth = Math.max(50, canvas.width * 0.1);
             
             const baseGapPercentage = (isMobile && canvas.width < canvas.height) ? 0.35 : (isMobile ? 0.45 : 0.28);
             responsiveSettings.pipeGap = Math.max(160, canvas.height * baseGapPercentage);
 
-            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(110 * (canvas.width / 400)) : 120;
+            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(90 * (canvas.width / 400)) : 120;
 
             responsiveSettings.pipeGapMargin = canvas.height * 0.15;
             responsiveSettings.pipeGapRange = canvas.height - responsiveSettings.pipeGap - (responsiveSettings.pipeGapMargin * 2);
@@ -568,7 +554,7 @@
             canvas.width = container.clientWidth;
             canvas.height = container.clientHeight;
             
-            [graphCanvasY, graphCanvasV, graphCanvasA, mobileGraphCanvasY, mobileGraphCanvasV].forEach(graphCanvas => {
+            [graphCanvasY, graphCanvasV, mobileGraphCanvasY, mobileGraphCanvasV].forEach(graphCanvas => {
                 if (graphCanvas && graphCanvas.parentElement) {
                     graphCanvas.width = graphCanvas.parentElement.clientWidth;
                     graphCanvas.height = graphCanvas.parentElement.clientHeight;
@@ -589,7 +575,7 @@
             clouds = [];
             setupStars();
             frameCount = 0; gameFrame = 0;
-            history = { y: [], v: [], a: [] };
+            history = { y: [], v: [] };
             pipes = []; coins = []; score = 0; coinCount = 0; 
             basePipeSpeed = isMobile ? 2.5 : 3;
             isBoosted = false; boostTimer = 0;
@@ -610,6 +596,9 @@
                 bird.LIFT = (8.5 * PIXELS_PER_METER) / FPS; 
                 canvas.style.background = GAME_BACKGROUNDS.day;
                  currentGameBackground = GAME_BACKGROUNDS.day;
+                 if (isMobile) {
+                    waitingForFirstTap = true;
+                 }
             }
         }
 
@@ -625,8 +614,16 @@
             } else if (gameState === 'game') {
                 updateGameBackground();
                 manageEnvironment();
-                if (!isPaused) updateGame();
+                if (!isPaused && !waitingForFirstTap) updateGame();
                 drawGame();
+                if(waitingForFirstTap) {
+                     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                     ctx.fillRect(0, canvas.height / 2 - 40, canvas.width, 80);
+                     ctx.fillStyle = 'white';
+                     ctx.font = `bold ${isMobile ? '20px' : '30px'} 'Press Start 2P'`;
+                     ctx.textAlign = 'center';
+                     ctx.fillText('Toca para empezar', canvas.width / 2, canvas.height / 2 + 10);
+                }
             }
             
             frameCount++; 
@@ -857,7 +854,6 @@
         function updateHud() {
             const heightMeters = (canvas.height - bird.y) / PIXELS_PER_METER;
             const velocityMs = (-bird.VELOCITY * FPS) / PIXELS_PER_METER;
-            const accelerationMs2 = (bird.GRAVITY * FPS * FPS) / PIXELS_PER_METER;
             
             hudTime.textContent = simulationTime.toFixed(2);
             mobileHudTime.textContent = simulationTime.toFixed(2);
@@ -865,11 +861,9 @@
             mobileHudHeight.textContent = heightMeters.toFixed(2);
             hudVelocity.textContent = velocityMs.toFixed(2);
             mobileHudVelocity.textContent = velocityMs.toFixed(2);
-            hudAcceleration.textContent = (-accelerationMs2).toFixed(2);
-            mobileHudAcceleration.textContent = (-accelerationMs2).toFixed(2);
 
-            history.y.push(Math.max(0, heightMeters)); history.v.push(velocityMs); history.a.push(-accelerationMs2);
-            if(history.y.length > 300) { history.y.shift(); history.v.shift(); history.a.shift(); }
+            history.y.push(Math.max(0, heightMeters)); history.v.push(velocityMs);
+            if(history.y.length > 300) { history.y.shift(); history.v.shift(); }
         }
         
         function drawPlanet() {
@@ -1072,8 +1066,10 @@
         }
         function drawTrajectory() { /* ... */ }
         function drawAllGraphs() {
-            drawGraph(graphCtxY, history.y, 'Altura (y)'); drawGraph(graphCtxV, history.v, 'Velocidad (v)'); drawGraph(graphCtxA, history.a, 'Aceleración (a)');
-            drawGraph(mobileGraphCtxY, history.y, 'Altura (y)'); drawGraph(mobileGraphCtxV, history.v, 'Velocidad (v)');
+            drawGraph(graphCtxY, history.y, 'Altura (y)'); 
+            drawGraph(graphCtxV, history.v, 'Velocidad (v)');
+            drawGraph(mobileGraphCtxY, history.y, 'Altura (y)'); 
+            drawGraph(mobileGraphCtxV, history.v, 'Velocidad (v)');
         }
         function drawGraph(graphCtx, data, label) {
             if (!graphCtx || !graphCtx.canvas.clientWidth) return;
@@ -1175,6 +1171,10 @@
         function handleInput(e) {
             if (e.code === 'Space' || e.type === 'mousedown' || e.type === 'touchstart') {
                 e.preventDefault();
+                 if (waitingForFirstTap) {
+                    waitingForFirstTap = false;
+                }
+
                 if (gameState === 'simulation') {
                     if (isPaused) return;
                     bird.VELOCITY = -bird.LIFT;
