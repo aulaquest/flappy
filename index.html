@@ -89,14 +89,14 @@
              background-color: rgba(15, 23, 42, 0.75); /* More translucent */
         }
         .share-button {
-            @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg shadow-md transition-transform transform hover:scale-105;
+            @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg shadow-md transition-transform transform hover:scale-105 border-b-4 active:border-b-0 active:translate-y-1;
         }
         
     </style>
 </head>
 <body class="bg-gray-900 flex items-center justify-center h-screen m-0">
 
-    <div id="gameContainer" class="relative w-full h-full max-w-screen-lg max-h-screen-md shadow-2xl overflow-hidden">
+    <div id="gameContainer" class="relative w-full h-full shadow-2xl overflow-hidden">
         <canvas id="gameCanvas"></canvas>
 
         <!-- Pantalla de Inicio -->
@@ -127,7 +127,7 @@
             <p class="text-lg md:text-xl mb-2 font-game">Monedas: <span id="finalCoins">0</span></p>
             <p class="text-lg md:text-xl mb-6 font-game">Intentos: <span id="attemptCounter">0</span></p>
             
-            <div class="flex flex-col md:flex-row md:items-start md:gap-8">
+            <div class="flex flex-col md:flex-row md:items-center md:gap-8">
                 <div class="flex flex-col gap-4">
                     <button id="retryButton" class="menu-button font-game bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-bold py-3 px-6 md:py-4 md:px-8 rounded-lg text-xl md:text-2xl shadow-lg transform hover:scale-105 transition-transform duration-200 border-4 border-yellow-600">
                         Reintentar
@@ -139,8 +139,8 @@
                 <div class="mt-6 md:mt-0">
                     <p class="font-game text-sm mb-3">Compartir</p>
                     <div class="flex gap-4 justify-center">
-                         <a id="shareWhatsapp" href="#" target="_blank" class="share-button" style="background-color: #25D366;">WhatsApp</a>
-                         <a id="shareTelegram" href="#" target="_blank" class="share-button" style="background-color: #0088cc;">Telegram</a>
+                         <a id="shareWhatsapp" href="#" target="_blank" class="share-button" style="background-color: #25D366; border-color: #128C7E;">WhatsApp</a>
+                         <a id="shareTelegram" href="#" target="_blank" class="share-button" style="background-color: #0088cc; border-color: #0077B5;">Telegram</a>
                     </div>
                 </div>
             </div>
@@ -538,15 +538,15 @@
             isMobile = window.matchMedia("(max-width: 768px)").matches || /Mobi|Android/i.test(navigator.userAgent);
             
             const birdScale = Math.max(0.5, canvas.height / 800);
-            responsiveSettings.birdWidth = (isMobile ? 48 : 50) * birdScale;
-            responsiveSettings.birdHeight = (isMobile ? 38 : 40) * birdScale;
+            responsiveSettings.birdWidth = (isMobile ? 52 : 50) * birdScale;
+            responsiveSettings.birdHeight = (isMobile ? 42 : 40) * birdScale;
 
             responsiveSettings.pipeWidth = Math.max(50, canvas.width * 0.1);
             
             const baseGapPercentage = (isMobile && canvas.width < canvas.height) ? 0.35 : (isMobile ? 0.45 : 0.28);
             responsiveSettings.pipeGap = Math.max(160, canvas.height * baseGapPercentage);
 
-            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(75 * (canvas.width / 400)) : 120;
+            responsiveSettings.pipeSpawnInterval = isMobile ? Math.floor(65 * (canvas.width / 400)) : 120;
 
             responsiveSettings.pipeGapMargin = canvas.height * 0.15;
             responsiveSettings.pipeGapRange = canvas.height - responsiveSettings.pipeGap - (responsiveSettings.pipeGapMargin * 2);
@@ -1215,7 +1215,14 @@
         mobileMenuBtn.addEventListener('click', openMobilePanel);
         mobilePanelOverlay.addEventListener('click', closeMobilePanel);
         
-        window.onload=()=>{ resizeCanvas(); setup('simulation'); startScreenLoop(); };
+        window.onload=()=>{ 
+            resizeCanvas(); 
+            if (isMobile) {
+                enterMobileExperience();
+            }
+            setup('simulation'); 
+            startScreenLoop(); 
+        };
         document.addEventListener('keydown',handleInput);canvas.addEventListener('mousedown',handleInput);canvas.addEventListener('touchstart',handleInput);window.addEventListener('resize', resizeCanvas);
         
         function updateSliderLabels(){
