@@ -112,7 +112,7 @@
                     Juego
                 </button>
             </div>
-            <button id="closeTabButton" class="absolute bottom-4 left-4 text-xs font-game bg-gray-700/50 hover:bg-red-700/80 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200">
+            <button id="closeTabButton" class="absolute bottom-4 left-4 text-xs font-game bg-gray-700/50 hover:bg-red-700/80 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200 hidden">
                 Cerrar
             </button>
              <a id="creditLink" href="https://aulaquest.com" target="_blank" class="absolute bottom-4 right-4 text-white text-xs opacity-70 hover:opacity-100 transition-opacity z-30 font-game" style="text-shadow: 1px 1px 2px black;">creado por aulaquest</a>
@@ -568,7 +568,7 @@
 
             let birdScale;
             if (isMobile && isLandscape) {
-                birdScale = canvas.height / 450; 
+                birdScale = canvas.height / 500; 
             } else {
                 birdScale = canvas.height / 800;
             }
@@ -659,6 +659,7 @@
                 if (!isPaused && !waitingForFirstTap) updateGame();
                 drawGame();
                 if(waitingForFirstTap) {
+                     bird.y = canvas.height / 2 + Math.sin(frameCount * 0.1) * 5;
                      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
                      ctx.fillRect(0, canvas.height / 2 - 40, canvas.width, 80);
                      ctx.fillStyle = 'white';
@@ -1313,6 +1314,8 @@
         mobilePanelOverlay.addEventListener('click', closeMobilePanel);
         
         window.onload=()=>{ 
+            isMobile = window.matchMedia("(max-width: 1024px)").matches || /Mobi|Android/i.test(navigator.userAgent);
+            closeTabButton.style.display = isMobile ? 'block' : 'none';
             resizeCanvas(); 
             if (isMobile) {
                 enterMobileExperience();
