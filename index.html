@@ -568,7 +568,7 @@
 
             let birdScale;
             if (isMobile && isLandscape) {
-                birdScale = canvas.height / 500; 
+                birdScale = canvas.height / 450; 
             } else {
                 birdScale = canvas.height / 800;
             }
@@ -1036,7 +1036,8 @@
 
                     // Planeta
                     let saturnGrad = ctx.createRadialGradient(-30, -30, 10, 0, 0, saturnRadius);
-                    saturnGrad.addColorStop(0, '#F5EAC7'); saturnGrad.addColorStop(1, '#D2B48C');
+                    saturnGrad.addColorStop(0, '#F5EAC7');
+                    saturnGrad.addColorStop(1, '#D2B48C');
                     ctx.fillStyle = saturnGrad;
                     ctx.beginPath();
                     ctx.arc(0, 0, saturnRadius, 0, 2 * Math.PI);
